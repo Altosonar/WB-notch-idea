@@ -144,7 +144,7 @@
   .btn-group { display: flex; gap: 6px; }
   .action-btn {
     flex: 1; height: var(--ui-height); border: none; border-radius: 8px;
-    font-size: 10px; font-weight: 800; text-transform: uppercase;
+    font-size: 11px; font-weight: 800; text-transform: uppercase;
     cursor: pointer; display: flex; align-items: center; justify-content: center;
     transition: all 0.2s;
   }
@@ -177,6 +177,13 @@
 
   .seam-trigger-btn {
     background: var(--brand-blue);
+    color: white;
+    font-size: 14px;
+    font-weight: 900;
+  }
+
+  .fold-trigger-btn {
+    background: var(--brand-orange);
     color: white;
     font-size: 14px;
     font-weight: 900;
@@ -223,7 +230,7 @@
     font-size: 11px;
   }
 
-  /* Notching Styles - Improved */
+  /* Notching Styles - Added */
   .notch-line { stroke: #000; stroke-width: 1.5; }
   .notch-label { 
     fill: #000; 
@@ -252,85 +259,6 @@
     stroke-width: 1.5;
   }
 
-  /* Notch Type Toggle */
-  .notch-type-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    margin-top: 8px;
-  }
-  
-  .notch-type-btn {
-    padding: 6px 10px;
-    border: 1px solid var(--border-light);
-    background: white;
-    border-radius: 6px;
-    font-size: 9px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    flex: 1;
-    text-align: center;
-  }
-  
-  .notch-type-btn.active {
-    background: var(--brand-blue);
-    color: white;
-    border-color: var(--brand-blue);
-  }
-  
-  .notch-type-label {
-    font-size: 9px;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    margin-right: 4px;
-  }
-
-  /* Updated notch type toggle row for 2 buttons */
-  .notch-toggle-row {
-    grid-column: 1 / -1;
-  }
-  
-  .notch-toggle-buttons {
-    display: flex;
-    gap: 6px;
-    margin-top: 4px;
-  }
-
-  /* Clear Notches Button */
-  .clear-notches-row {
-    grid-column: 1 / -1;
-    margin-top: 5px;
-  }
-  
-  .clear-notches-btn {
-    width: 100%;
-    height: var(--ui-height);
-    border: 1px solid var(--border-light);
-    border-radius: 6px;
-    font-size: 9px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    background: white;
-    text-align: center;
-    padding: 6px 10px;
-  }
-  
-  .clear-notches-btn:hover {
-    background: #f8f9fa;
-  }
-  
-  .clear-notches-btn:active {
-    background: #e9ecef;
-  }
-
   @media (min-width: 769px) {
     .stepper {
       min-width: 180px;
@@ -338,10 +266,6 @@
     
     .bottom-shelf .stepper {
       min-width: 160px;
-    }
-    
-    .notch-toggle-row {
-      grid-column: 1 / -1;
     }
   }
 
@@ -413,19 +337,6 @@
       padding: 0 8px;
     }
     
-    #seam-modal .stepper {
-      height: 52px;
-    }
-    
-    #seam-modal .step-btn {
-      width: 52px;
-    }
-    
-    #seam-modal .stepper-input {
-      font-size: 16px;
-      min-width: 70px;
-    }
-    
     .bottom-shelf {
       grid-template-columns: 1fr;
       gap: 15px;
@@ -441,29 +352,10 @@
     .input-group {
       width: 100%;
     }
-    
-    .notch-toggle-row {
-      grid-column: 1 / -1;
-      margin-top: 5px;
-    }
-    
-    .notch-toggle-buttons {
-      display: flex;
-      gap: 6px;
-      margin-top: 4px;
-    }
-    
-    .notch-type-btn {
-      padding: 8px 6px;
-      font-size: 9px;
-      flex: 1;
-    }
-    
-    .clear-notches-btn {
-      padding: 8px 6px;
-      font-size: 9px;
-      height: auto;
-      min-height: var(--ui-height);
+
+    .action-btn {
+      height: 50px;
+      font-size: 12px;
     }
   }
   
@@ -518,18 +410,49 @@
     pointer-events: none;
     overflow: hidden;
   }
-  #seam-modal.active { display: flex; }
+  #seam-modal.active { 
+    display: flex; 
+    pointer-events: auto;
+  }
+
+  #fold-modal {
+    position: absolute; 
+    inset: 0; 
+    background: transparent; 
+    z-index: 1000; 
+    display: none; 
+    pointer-events: none;
+    overflow: hidden;
+  }
+  #fold-modal.active { 
+    display: flex; 
+    pointer-events: auto;
+  }
+
+  #notches-modal {
+    position: absolute; 
+    inset: 0; 
+    background: transparent; 
+    z-index: 1000; 
+    display: none; 
+    pointer-events: none;
+    overflow: hidden;
+  }
+  #notches-modal.active { 
+    display: flex; 
+    pointer-events: auto;
+  }
 
   .modal-card { 
     position: absolute;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px); 
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px); 
     border: 1.5px solid rgba(0, 0, 0, 0.1);
     border-radius: 20px; 
     width: 340px;
     padding: 0; 
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2); 
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
     pointer-events: auto;
     left: 50%;
     top: 40%;
@@ -539,7 +462,7 @@
   }
   
   .modal-header {
-    padding: 12px 20px;
+    padding: 16px 20px;
     background: rgba(0,123,255,0.1);
     border-radius: 20px 20px 0 0;
     cursor: move;
@@ -550,6 +473,16 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+  }
+
+  .fold-modal-header {
+    background: rgba(255, 69, 0, 0.1);
+    color: var(--brand-orange);
+  }
+
+  .notches-modal-header {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
   }
   
   .modal-close-btn {
@@ -569,6 +502,14 @@
     user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
+
+  .fold-modal-close-btn {
+    color: var(--brand-orange);
+  }
+
+  .notches-modal-close-btn {
+    color: #28a745;
+  }
   
   .modal-close-btn:active {
     opacity: 0.7;
@@ -581,84 +522,200 @@
   .modal-footer { display: none; }
   
   #seam-modal .stepper {
-    height: 48px;
+    height: 52px;
     min-width: 0;
+  }
+
+  #fold-modal .action-btn,
+  #notches-modal .action-btn {
+    height: 52px;
+    font-size: 12px;
   }
   
   #seam-modal .step-btn {
-    width: 48px;
+    width: 52px;
     font-size: 22px;
     height: 100%;
+    background: rgba(0, 123, 255, 0.08);
+    border-radius: 0;
   }
   
   #seam-modal .stepper-input {
-    font-size: 15px;
+    font-size: 16px;
     height: 100%;
     min-width: 0;
     width: 100%;
     padding: 0 5px;
+    background: rgba(0, 123, 255, 0.04);
+    border-left: 1px solid rgba(0, 123, 255, 0.1);
+    border-right: 1px solid rgba(0, 123, 255, 0.1);
   }
   
-  #seam-modal .control-grid {
+  #seam-modal .control-grid,
+  #fold-modal .control-grid,
+  #notches-modal .control-grid {
     gap: 15px;
+  }
+
+  /* Notch Type Buttons in Modal */
+  .notch-type-btn {
+    flex: 1;
+    height: 52px;
+    border: 1px solid var(--border-light);
+    background: white;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .notch-type-btn.active {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+  }
+  
+  .clear-notches-btn {
+    width: 100%;
+    height: 52px;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: white;
+    text-align: center;
+    padding: 0 15px;
+  }
+  
+  .clear-notches-btn:hover {
+    background: #f8f9fa;
+  }
+  
+  .clear-notches-btn:active {
+    background: #e9ecef;
   }
   
   @media (max-width: 768px) {
+    #seam-modal, #fold-modal, #notches-modal {
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+    }
+    
     .modal-card {
       width: calc(100% - 32px);
-      left: 16px;
-      right: 16px;
-      transform: translate(0, 0);
-      top: 20px;
-      margin: 0;
+      max-width: 400px;
       max-height: calc(100vh - 40px);
       overflow-y: auto;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.3);
     }
     
     #seam-modal .stepper {
-      height: 56px;
-      justify-content: space-between;
+      height: 64px;
+      min-height: 64px;
+      margin: 0 0 15px 0;
+      border-radius: 12px;
+      border: 2px solid rgba(0, 123, 255, 0.15);
+      overflow: visible;
+      position: relative;
+    }
+
+    #fold-modal .action-btn,
+    #notches-modal .action-btn,
+    #notches-modal .notch-type-btn,
+    #notches-modal .clear-notches-btn {
+      height: 64px;
+      font-size: 13px;
     }
     
     #seam-modal .step-btn {
-      width: 60px;
-      font-size: 24px;
+      width: 72px;
+      min-width: 72px;
+      font-size: 30px;
       flex-shrink: 0;
       position: relative;
       z-index: 10;
-    }
-    
-    #seam-modal .stepper-input {
-      font-size: 16px !important;
-      flex: 0 1 100px;
-      min-width: 80px;
-      position: relative;
-      z-index: 1;
-    }
-    
-    #seam-modal .stepper {
-      position: relative;
+      background: rgba(0, 123, 255, 0.12);
+      border-radius: 0;
     }
     
     #seam-modal .step-btn:first-child {
-      margin-right: -10px;
+      border-radius: 10px 0 0 10px;
     }
     
     #seam-modal .step-btn:last-child {
-      margin-left: -10px;
+      border-radius: 0 10px 10px 0;
     }
     
-    #seam-modal.active {
-      align-items: flex-start;
-      padding-top: 20px;
+    #seam-modal .step-btn:active {
+      background: rgba(0, 123, 255, 0.2);
+    }
+    
+    #seam-modal .stepper-input {
+      font-size: 20px !important;
+      font-weight: 800;
+      color: var(--brand-blue);
+      min-width: 100px;
+      width: auto;
+      flex: 0 0 auto;
+      padding: 0 10px;
+      position: relative;
+      z-index: 1;
+      background: rgba(255, 255, 255, 0.7);
+      border-left: 2px solid rgba(0, 123, 255, 0.15);
+      border-right: 2px solid rgba(0, 123, 255, 0.15);
+      pointer-events: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    
+    #seam-modal .control-grid, 
+    #fold-modal .control-grid,
+    #notches-modal .control-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    
+    #seam-modal .input-group, 
+    #fold-modal .input-group,
+    #notches-modal .input-group {
+      margin-bottom: 8px;
+    }
+    
+    #seam-modal .input-group label, 
+    #fold-modal .input-group label,
+    #notches-modal .input-group label {
+      font-size: 11px;
+      margin-bottom: 10px;
+      display: block;
+      color: var(--dark-grey);
+      font-weight: 800;
+    }
+    
+    .modal-header {
+      padding: 18px 20px;
+      font-size: 13px;
+      min-height: 56px;
     }
     
     .modal-body {
-      padding: 15px;
-    }
-    
-    #seam-modal .control-grid {
-      gap: 12px;
+      padding: 20px;
     }
     
     .modal-card {
@@ -669,6 +726,66 @@
     .modal-body {
       flex: 1;
       overflow-y: auto;
+    }
+  }
+  
+  /* Enhanced desktop modal */
+  @media (min-width: 769px) {
+    .modal-card {
+      width: 380px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+      border: 1px solid rgba(0, 123, 255, 0.2);
+    }
+
+    #fold-modal .modal-card {
+      border: 1px solid rgba(255, 69, 0, 0.2);
+    }
+
+    #notches-modal .modal-card {
+      border: 1px solid rgba(40, 167, 69, 0.2);
+    }
+    
+    #seam-modal .stepper {
+      height: 56px;
+      border-radius: 10px;
+      border: 2px solid rgba(0, 123, 255, 0.15);
+    }
+
+    #fold-modal .action-btn,
+    #notches-modal .action-btn,
+    #notches-modal .notch-type-btn,
+    #notches-modal .clear-notches-btn {
+      height: 56px;
+    }
+    
+    #seam-modal .step-btn {
+      width: 56px;
+      background: rgba(0, 123, 255, 0.1);
+    }
+    
+    #seam-modal .step-btn:hover {
+      background: rgba(0, 123, 255, 0.15);
+    }
+    
+    #seam-modal .stepper-input {
+      font-size: 17px;
+      background: rgba(255, 255, 255, 0.8);
+      border-left: 2px solid rgba(0, 123, 255, 0.1);
+      border-right: 2px solid rgba(0, 123, 255, 0.1);
+    }
+    
+    .modal-header {
+      padding: 14px 20px;
+      font-size: 12px;
+      background: linear-gradient(to right, rgba(0,123,255,0.1), rgba(0,123,255,0.05));
+    }
+
+    .fold-modal-header {
+      background: linear-gradient(to right, rgba(255,69,0,0.1), rgba(255,69,0,0.05));
+    }
+
+    .notches-modal-header {
+      background: linear-gradient(to right, rgba(40,167,69,0.1), rgba(40,167,69,0.05));
     }
   }
   
@@ -708,14 +825,62 @@
       padding: 12px;
     }
     
-    .notch-type-btn {
-      padding: 7px 4px;
-      font-size: 8px;
+    #seam-modal .step-btn {
+      width: 68px;
+      min-width: 68px;
+      font-size: 28px;
     }
     
-    .clear-notches-btn {
-      padding: 7px 4px;
-      font-size: 8px;
+    #seam-modal .stepper-input {
+      font-size: 18px !important;
+      min-width: 90px;
+    }
+
+    #fold-modal .action-btn,
+    #notches-modal .action-btn,
+    #notches-modal .notch-type-btn,
+    #notches-modal .clear-notches-btn {
+      height: 60px;
+    }
+  }
+  
+  /* Prevent keyboard popup on mobile for modal inputs */
+  #seam-modal .stepper-input {
+    caret-color: transparent;
+  }
+  
+  #seam-modal .stepper-input:focus {
+    outline: none;
+    box-shadow: none;
+  }
+  
+  /* Improved touch feedback */
+  .step-btn {
+    transition: background 0.1s ease;
+  }
+  
+  .step-btn:active {
+    transition: background 0.05s ease;
+  }
+
+  /* Ensure all action buttons have consistent sizing */
+  .bottom-shelf .action-btn {
+    height: var(--ui-height) !important;
+    min-height: var(--ui-height) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    border-radius: 8px !important;
+  }
+
+  @media (max-width: 768px) {
+    .bottom-shelf .action-btn {
+      height: 50px !important;
+      min-height: 50px !important;
+      font-size: 12px !important;
     }
   }
 </style>
@@ -805,51 +970,11 @@
     <div class="control-grid">
       <div class="input-group">
        <label>Shape</label>
-        <button id="toggle-type-btn" class="action-btn btn-secondary" style="opacity: 0.7; cursor: default;" disabled>Straight</button>
+        <button id="toggle-type-btn" class="action-btn btn-secondary" onclick="toggleNotchesModal()">Notches</button>
       </div>
-      <div class="input-group">
-       <label>Notch Size</label>
-        <div class="stepper">
-          <button class="step-btn hold-adjust" data-id="notch-size" data-step="-1">−</button>
-          <input type="number" id="notch-size" class="stepper-input" value="8" inputmode="decimal" oninput="draw()" min="4" max="20" step="1">
-          <button class="step-btn hold-adjust" data-id="notch-size" data-step="1">+</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="control-grid">
       <div class="input-group">
        <label>Fold Pattern</label>
-        <div class="btn-group">
-          <button id="fold-l" class="action-btn btn-outline" onclick="toggleFold('L')">Fold L</button>
-          <button id="fold-r" class="action-btn btn-outline" onclick="toggleFold('R')">Fold R</button>
-        </div>
-      </div>
-      <div class="input-group">
-       <label>Fold Extensions</label>
-        <div class="btn-group">
-          <button id="ext-fold-l" class="action-btn btn-outline" onclick="toggleExtFold('L')">Ext L</button>
-          <button id="ext-fold-r" class="action-btn btn-outline" onclick="toggleExtFold('R')">Ext R</button>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Updated Notch Type Toggle Row with 2 buttons (removed T-notch) -->
-    <div class="control-grid notch-toggle-row">
-      <div class="input-group">
-        <label>Notch Type</label>
-        <div class="notch-toggle-buttons">
-          <button id="notch-v-btn" class="notch-type-btn active" onclick="setNotchType('v-notch')">V-Notch</button>
-          <button id="notch-slit-btn" class="notch-type-btn" onclick="setNotchType('slit-notch')">Slit-Notch</button>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Clear All Notches Button - Same size as notch buttons -->
-    <div class="control-grid clear-notches-row">
-      <div class="input-group">
-        <label>Clear Notches</label>
-        <button class="clear-notches-btn" onclick="clearAllNotches()">Clear All Notches</button>
+        <button class="action-btn btn-outline" onclick="toggleFoldModal()">Fold Pattern</button>
       </div>
     </div>
   </div>
@@ -858,7 +983,7 @@
     <div class="modal-card" id="draggable-card">
       <div class="modal-header" id="modal-drag-handle">
         Seam Allowance (Drag Me)
-        <button class="modal-close-btn" onclick="closeModal()">×</button>
+        <button class="modal-close-btn" onclick="closeModal('seam')">×</button>
       </div>
       <div class="modal-body">
           <div class="control-grid" style="margin-bottom:0;">
@@ -866,6 +991,68 @@
             <div class="input-group"><label>Bottom</label><div class="stepper"><button class="step-btn hold-adjust" data-id="sa-bot" data-step="-0.125">−</button><input type="number" id="sa-bot" class="stepper-input" value="0.5" inputmode="decimal" oninput="draw()" min="0" max="2" step="0.125"><button class="step-btn hold-adjust" data-id="sa-bot" data-step="0.125">+</button></div></div>
             <div class="input-group"><label>Left</label><div class="stepper"><button class="step-btn hold-adjust" data-id="sa-left" data-step="-0.125">−</button><input type="number" id="sa-left" class="stepper-input" value="0.5" inputmode="decimal" oninput="draw()" min="0" max="2" step="0.125"><button class="step-btn hold-adjust" data-id="sa-left" data-step="0.125">+</button></div></div>
             <div class="input-group"><label>Right</label><div class="stepper"><button class="step-btn hold-adjust" data-id="sa-right" data-step="-0.125">−</button><input type="number" id="sa-right" class="stepper-input" value="0.5" inputmode="decimal" oninput="draw()" min="0" max="2" step="0.125"><button class="step-btn hold-adjust" data-id="sa-right" data-step="0.125">+</button></div></div>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Fold Pattern Modal -->
+  <div id="fold-modal">
+    <div class="modal-card" id="fold-draggable-card">
+      <div class="modal-header fold-modal-header" id="fold-modal-drag-handle">
+        Fold Pattern Options (Drag Me)
+        <button class="modal-close-btn fold-modal-close-btn" onclick="closeModal('fold')">×</button>
+      </div>
+      <div class="modal-body">
+          <div class="control-grid" style="margin-bottom:0;">
+            <div class="input-group">
+              <label>Fold Pattern</label>
+              <div class="btn-group">
+                <button id="fold-l" class="action-btn btn-outline" onclick="toggleFold('L')">Fold L</button>
+                <button id="fold-r" class="action-btn btn-outline" onclick="toggleFold('R')">Fold R</button>
+              </div>
+            </div>
+            <div class="input-group">
+              <label>Fold Extensions</label>
+              <div class="btn-group">
+                <button id="ext-fold-l" class="action-btn btn-outline" onclick="toggleExtFold('L')">Ext L</button>
+                <button id="ext-fold-r" class="action-btn btn-outline" onclick="toggleExtFold('R')">Ext R</button>
+              </div>
+            </div>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Notches Modal -->
+  <div id="notches-modal">
+    <div class="modal-card" id="notches-draggable-card">
+      <div class="modal-header notches-modal-header" id="notches-modal-drag-handle">
+        Notch Options (Drag Me)
+        <button class="modal-close-btn notches-modal-close-btn" onclick="closeModal('notches')">×</button>
+      </div>
+      <div class="modal-body">
+          <div class="control-grid" style="margin-bottom:0;">
+            <div class="input-group">
+              <label>Notch Type</label>
+              <div class="btn-group">
+                <button id="notch-v-btn" class="notch-type-btn active" onclick="setNotchType('v-notch')">V-Notch</button>
+                <button id="notch-slit-btn" class="notch-type-btn" onclick="setNotchType('slit-notch')">Slit-Notch</button>
+                <button id="notch-t-btn" class="notch-type-btn" onclick="setNotchType('t-notch')">T-Notch</button>
+              </div>
+            </div>
+            <div class="input-group">
+              <label>Notch Size</label>
+              <div class="stepper">
+                <button class="step-btn hold-adjust" data-id="notch-size" data-step="-1">−</button>
+                <input type="number" id="notch-size" class="stepper-input" value="8" inputmode="decimal" oninput="draw()" min="4" max="20" step="1">
+                <button class="step-btn hold-adjust" data-id="notch-size" data-step="1">+</button>
+              </div>
+            </div>
+            <div class="input-group" style="grid-column: 1 / -1;">
+              <label>Clear All Notches</label>
+              <button class="clear-notches-btn" onclick="clearAllNotches()">Clear All Notches</button>
+            </div>
           </div>
       </div>
     </div>
@@ -893,9 +1080,40 @@
   const draggableCard = document.getElementById('draggable-card');
   const dragHandle = document.getElementById('modal-drag-handle');
   const saModal = document.getElementById('seam-modal');
+  const foldModal = document.getElementById('fold-modal');
+  const notchesModal = document.getElementById('notches-modal');
+  const foldDraggableCard = document.getElementById('fold-draggable-card');
+  const foldDragHandle = document.getElementById('fold-modal-drag-handle');
+  const notchesDraggableCard = document.getElementById('notches-draggable-card');
+  const notchesDragHandle = document.getElementById('notches-modal-drag-handle');
   const appContain = document.getElementById('app-contain');
   const saBtn = document.getElementById('sa-toggle-btn');
   const specSummary = document.getElementById('spec-summary');
+
+  // Prevent keyboard popup on mobile for modal inputs
+  document.addEventListener('DOMContentLoaded', function() {
+    const modalInputs = document.querySelectorAll('#seam-modal .stepper-input');
+    modalInputs.forEach(input => {
+      // Make input readonly on mobile to prevent keyboard
+      if (window.innerWidth <= 768) {
+        input.setAttribute('readonly', 'true');
+      }
+      
+      // Prevent focus on tap
+      input.addEventListener('touchstart', function(e) {
+        if (window.innerWidth <= 768) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }, { passive: false });
+      
+      input.addEventListener('focus', function(e) {
+        if (window.innerWidth <= 768) {
+          e.target.blur();
+        }
+      });
+    });
+  });
 
   // Prevent text selection on the entire app
   document.addEventListener('selectstart', function(e) {
@@ -924,41 +1142,68 @@
 
   function toggleSAModal() {
     if (saModal.classList.contains('active')) {
-      closeModal();
+      closeModal('seam');
     } else {
-      openModal();
+      openModal('seam');
+    }
+  }
+
+  function toggleFoldModal() {
+    if (foldModal.classList.contains('active')) {
+      closeModal('fold');
+    } else {
+      openModal('fold');
+    }
+  }
+
+  function toggleNotchesModal() {
+    if (notchesModal.classList.contains('active')) {
+      closeModal('notches');
+    } else {
+      openModal('notches');
     }
   }
 
   saBtn.addEventListener('click', () => toggleSAModal());
 
-  function openModal() { 
-    saModal.style.display = 'flex';
-    saModal.classList.add('active'); 
+  function openModal(type) { 
+    const modal = type === 'seam' ? saModal : (type === 'fold' ? foldModal : notchesModal);
+    const card = type === 'seam' ? draggableCard : (type === 'fold' ? foldDraggableCard : notchesDraggableCard);
+    
+    modal.style.display = 'flex';
+    modal.classList.add('active'); 
     
     if (window.innerWidth <= 768) {
-      draggableCard.style.left = '16px';
-      draggableCard.style.right = '16px';
-      draggableCard.style.transform = 'translate(0, 0)';
-      draggableCard.style.top = '20px';
-      draggableCard.style.overflowY = 'auto';
-      draggableCard.style.maxHeight = 'calc(100vh - 40px)';
+      // Center modal on mobile with proper sizing
+      card.style.left = '50%';
+      card.style.right = 'auto';
+      card.style.transform = 'translate(-50%, -50%)';
+      card.style.top = '50%';
+      card.style.width = 'calc(100% - 32px)';
+      card.style.maxWidth = '400px';
+      card.style.maxHeight = 'calc(100vh - 40px)';
+      card.style.overflowY = 'auto';
     } else {
-      draggableCard.style.left = '50%';
-      draggableCard.style.top = '40%';
-      draggableCard.style.transform = 'translate(-50%, -50%)';
-      draggableCard.style.width = '340px';
-      draggableCard.style.overflowY = 'visible';
-      draggableCard.style.maxHeight = 'none';
+      card.style.left = '50%';
+      card.style.top = '40%';
+      card.style.transform = 'translate(-50%, -50%)';
+      card.style.width = '380px';
+      card.style.overflowY = 'visible';
+      card.style.maxHeight = 'none';
     }
   }
   
-  function closeModal() { 
-    saModal.classList.remove('active'); 
-    saModal.style.display = 'none';
+  function closeModal(type) { 
+    const modal = type === 'seam' ? saModal : (type === 'fold' ? foldModal : notchesModal);
+    modal.classList.remove('active'); 
+    setTimeout(() => {
+      modal.style.display = 'none';
+    }, 50);
   }
 
   let isModalDragging = false, modalInitX = 0, modalInitY = 0;
+  let isFoldModalDragging = false, foldModalInitX = 0, foldModalInitY = 0;
+  let isNotchesModalDragging = false, notchesModalInitX = 0, notchesModalInitY = 0;
   
   dragHandle.addEventListener('pointerdown', (e) => {
     if (!e.target.classList.contains('modal-close-btn')) {
@@ -971,6 +1216,37 @@
       draggableCard.style.left = (rect.left - containerRect.left) + 'px';
       draggableCard.style.top = (rect.top - containerRect.top) + 'px';
       dragHandle.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    }
+  });
+
+  foldDragHandle.addEventListener('pointerdown', (e) => {
+    if (!e.target.classList.contains('modal-close-btn')) {
+      isFoldModalDragging = true;
+      const rect = foldDraggableCard.getBoundingClientRect();
+      const containerRect = appContain.getBoundingClientRect();
+      foldModalInitX = e.clientX - rect.left;
+      foldModalInitY = e.clientY - rect.top;
+      foldDraggableCard.style.transform = 'none';
+      foldDraggableCard.style.left = (rect.left - containerRect.left) + 'px';
+      foldDraggableCard.style.top = (rect.top - containerRect.top) + 'px';
+      foldDragHandle.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    }
+  });
+
+  notchesDragHandle.addEventListener('pointerdown', (e) => {
+    if (!e.target.classList.contains('modal-close-btn')) {
+      isNotchesModalDragging = true;
+      const rect = notchesDraggableCard.getBoundingClientRect();
+      const containerRect = appContain.getBoundingClientRect();
+      notchesModalInitX = e.clientX - rect.left;
+      notchesModalInitY = e.clientY - rect.top;
+      notchesDraggableCard.style.transform = 'none';
+      notchesDraggableCard.style.left = (rect.left - containerRect.left) + 'px';
+      notchesDraggableCard.style.top = (rect.top - containerRect.top) + 'px';
+      notchesDragHandle.setPointerCapture(e.pointerId);
+      e.preventDefault();
     }
   });
 
@@ -984,20 +1260,112 @@
         draggableCard.style.left = `${newX}px`; 
         draggableCard.style.top = `${newY}px`; 
     } 
+    if (isFoldModalDragging) { 
+        const containerRect = appContain.getBoundingClientRect();
+        let newX = e.clientX - containerRect.left - foldModalInitX;
+        let newY = e.clientY - containerRect.top - foldModalInitY;
+        newX = Math.max(0, Math.min(newX, containerRect.width - foldDraggableCard.offsetWidth));
+        newY = Math.max(0, Math.min(newY, containerRect.height - foldDraggableCard.offsetHeight));
+        foldDraggableCard.style.left = `${newX}px`; 
+        foldDraggableCard.style.top = `${newY}px`; 
+    } 
+    if (isNotchesModalDragging) { 
+        const containerRect = appContain.getBoundingClientRect();
+        let newX = e.clientX - containerRect.left - notchesModalInitX;
+        let newY = e.clientY - containerRect.top - notchesModalInitY;
+        newX = Math.max(0, Math.min(newX, containerRect.width - notchesDraggableCard.offsetWidth));
+        newY = Math.max(0, Math.min(newY, containerRect.height - notchesDraggableCard.offsetHeight));
+        notchesDraggableCard.style.left = `${newX}px`; 
+        notchesDraggableCard.style.top = `${newY}px`; 
+    } 
   });
-  window.addEventListener('pointerup', () => isModalDragging = false);
-
-  saModal.addEventListener('click', (e) => {
-    if (e.target === saModal) {
-      closeModal();
+  window.addEventListener('pointerup', () => {
+    if (isModalDragging) {
+      isModalDragging = false;
+    }
+    if (isFoldModalDragging) {
+      isFoldModalDragging = false;
+    }
+    if (isNotchesModalDragging) {
+      isNotchesModalDragging = false;
     }
   });
 
-  window.addEventListener('keydown', (e) => {
-    if (e.code === 'Space') { isSpacePressed = true; viewportDiv.style.cursor = 'grab'; }
-    if (e.key === 'Escape') { if (saModal.classList.contains('active')) closeModal(); else resetInputs(); }
+  // Close modal when clicking outside on mobile
+  saModal.addEventListener('click', (e) => {
+    if (e.target === saModal) {
+      closeModal('seam');
+    }
   });
-  window.addEventListener('keyup', (e) => { if (e.code === 'Space') { isSpacePressed = false; viewportDiv.style.cursor = 'crosshair'; } });
+
+  foldModal.addEventListener('click', (e) => {
+    if (e.target === foldModal) {
+      closeModal('fold');
+    }
+  });
+
+  notchesModal.addEventListener('click', (e) => {
+    if (e.target === notchesModal) {
+      closeModal('notches');
+    }
+  });
+
+  // Close modal with Escape key
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') { 
+      isSpacePressed = true; 
+      viewportDiv.style.cursor = 'grab'; 
+    }
+    if (e.key === 'Escape') { 
+      if (saModal.classList.contains('active')) {
+        closeModal('seam');
+      } else if (foldModal.classList.contains('active')) {
+        closeModal('fold');
+      } else if (notchesModal.classList.contains('active')) {
+        closeModal('notches');
+      } else {
+        resetInputs();
+      }
+    }
+  });
+  
+  window.addEventListener('keyup', (e) => { 
+    if (e.code === 'Space') { 
+      isSpacePressed = false; 
+      viewportDiv.style.cursor = 'crosshair'; 
+    } 
+  });
+
+  // Improved hold-adjust for modal buttons (prevent keyboard popup)
+  document.querySelectorAll('#seam-modal .hold-adjust').forEach(btn => {
+    btn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      const step = parseFloat(btn.dataset.step);
+      adjValue(id, step);
+      
+      // Visual feedback
+      btn.style.backgroundColor = 'rgba(0, 123, 255, 0.2)';
+      
+      adjustTimer = setTimeout(() => {
+        adjustInterval = setInterval(() => adjValue(id, step), 80);
+      }, 400);
+    });
+    
+    btn.addEventListener('pointerup', (e) => {
+      e.preventDefault();
+      clearTimeout(adjustTimer);
+      clearInterval(adjustInterval);
+      btn.style.backgroundColor = '';
+    });
+    
+    btn.addEventListener('pointerleave', (e) => {
+      clearTimeout(adjustTimer);
+      clearInterval(adjustInterval);
+      btn.style.backgroundColor = '';
+    });
+  });
 
   viewportDiv.addEventListener('wheel', (e) => {
     e.preventDefault();
@@ -1034,7 +1402,7 @@
     });
   });
 
-  document.querySelectorAll('.hold-adjust').forEach(btn => {
+  document.querySelectorAll('.hold-adjust:not(#seam-modal .hold-adjust)').forEach(btn => {
     btn.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       const id = btn.dataset.id;
@@ -1052,17 +1420,19 @@
     clearInterval(adjustInterval);
   });
 
-  // Set notch type function - updated for 2 notch types
+  // Set notch type function
   function setNotchType(type) {
     currentNotchType = type;
     
     // Update button states
     document.getElementById('notch-v-btn').classList.toggle('active', type === 'v-notch');
     document.getElementById('notch-slit-btn').classList.toggle('active', type === 'slit-notch');
+    document.getElementById('notch-t-btn').classList.toggle('active', type === 't-notch');
     
     // Update spec summary
     let notchTypeText = 'V-Notch';
     if (type === 'slit-notch') notchTypeText = 'Slit-Notch';
+    else if (type === 't-notch') notchTypeText = 'T-Notch';
     document.getElementById('sum-notch-type').textContent = notchTypeText;
     
     // Redraw with new notch type
@@ -1104,8 +1474,25 @@
     draw();
   }
 
-  function toggleFold(side) { activeFold = (activeFold === side) ? null : side; draw(); }
-  function toggleExtFold(side) { if(side==='L') extFoldL = !extFoldL; else extFoldR = !extFoldR; draw(); }
+  function toggleFold(side) { 
+    activeFold = (activeFold === side) ? null : side; 
+    updateFoldButtons();
+    draw(); 
+  }
+  
+  function toggleExtFold(side) { 
+    if(side==='L') extFoldL = !extFoldL; 
+    else extFoldR = !extFoldR; 
+    updateFoldButtons();
+    draw(); 
+  }
+
+  function updateFoldButtons() {
+    document.getElementById('fold-l').classList.toggle('active', activeFold === 'L');
+    document.getElementById('fold-r').classList.toggle('active', activeFold === 'R');
+    document.getElementById('ext-fold-l').classList.toggle('active', extFoldL);
+    document.getElementById('ext-fold-r').classList.toggle('active', extFoldR);
+  }
   
   function adjValue(id, val) { 
     const el = document.getElementById(id); 
@@ -1134,7 +1521,7 @@
     }
   }
 
-  // Improved notching functions with V-notch and Slit-notch support (removed T-notch)
+  // Improved notching functions with V-notch, Slit-notch, and T-notch support
   function addNotch(x, y, type = "standard", label = "", isTop = true, isFoldLine = false) {
     const notchLen = currentNotchSize; // Use adjustable notch size
     const triangleSize = notchLen * 0.75; // Triangle notches are slightly smaller
@@ -1157,6 +1544,11 @@
       case 'slit-notch':
         // Draw Slit-notch (simple vertical line)
         drawSlitNotch(x, y, type, isTop, notchLen, triangleSize);
+        break;
+        
+      case 't-notch':
+        // Draw T-notch
+        drawTNotch(x, y, type, isTop, notchLen, triangleSize);
         break;
         
       case 'v-notch':
@@ -1280,6 +1672,84 @@
       notchesLayer.appendChild(line);
     }
   }
+  
+  function drawTNotch(x, y, type, isTop, notchLen, triangleSize) {
+    if (type === "triangle") {
+      // T-notch triangle style - draw a T shape
+      const vertical = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      const horizontal = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      
+      if (isTop) {
+        vertical.setAttribute('x1', x);
+        vertical.setAttribute('y1', y);
+        vertical.setAttribute('x2', x);
+        vertical.setAttribute('y2', y - triangleSize);
+        vertical.setAttribute('class', 'notch-line');
+        
+        horizontal.setAttribute('x1', x - triangleSize/2);
+        horizontal.setAttribute('y1', y - triangleSize/3);
+        horizontal.setAttribute('x2', x + triangleSize/2);
+        horizontal.setAttribute('y2', y - triangleSize/3);
+        horizontal.setAttribute('class', 'notch-line');
+      } else {
+        vertical.setAttribute('x1', x);
+        vertical.setAttribute('y1', y);
+        vertical.setAttribute('x2', x);
+        vertical.setAttribute('y2', y + triangleSize);
+        vertical.setAttribute('class', 'notch-line');
+        
+        horizontal.setAttribute('x1', x - triangleSize/2);
+        horizontal.setAttribute('y1', y + triangleSize/3);
+        horizontal.setAttribute('x2', x + triangleSize/2);
+        horizontal.setAttribute('y2', y + triangleSize/3);
+        horizontal.setAttribute('class', 'notch-line');
+      }
+      
+      notchesLayer.appendChild(vertical);
+      notchesLayer.appendChild(horizontal);
+    } else if (type === "dot") {
+      // Dot notches for T style
+      const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      dot.setAttribute('cx', x);
+      dot.setAttribute('cy', y);
+      dot.setAttribute('r', notchLen/3);
+      dot.setAttribute('class', 'notch-dot');
+      notchesLayer.appendChild(dot);
+    } else {
+      // Standard T-notch
+      const vertical = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      const horizontal = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      
+      if (isTop) {
+        vertical.setAttribute('x1', x);
+        vertical.setAttribute('y1', y);
+        vertical.setAttribute('x2', x);
+        vertical.setAttribute('y2', y - notchLen/2);
+        vertical.setAttribute('class', 'notch-line');
+        
+        horizontal.setAttribute('x1', x - notchLen/2);
+        horizontal.setAttribute('y1', y - notchLen/2);
+        horizontal.setAttribute('x2', x + notchLen/2);
+        horizontal.setAttribute('y2', y - notchLen/2);
+        horizontal.setAttribute('class', 'notch-line');
+      } else {
+        vertical.setAttribute('x1', x);
+        vertical.setAttribute('y1', y);
+        vertical.setAttribute('x2', x);
+        vertical.setAttribute('y2', y + notchLen/2);
+        vertical.setAttribute('class', 'notch-line');
+        
+        horizontal.setAttribute('x1', x - notchLen/2);
+        horizontal.setAttribute('y1', y + notchLen/2);
+        horizontal.setAttribute('x2', x + notchLen/2);
+        horizontal.setAttribute('y2', y + notchLen/2);
+        horizontal.setAttribute('class', 'notch-line');
+      }
+      
+      notchesLayer.appendChild(vertical);
+      notchesLayer.appendChild(horizontal);
+    }
+  }
 
   function addLabel(x, y, text, anchor = "middle", rotation = 0, isSeam = false) {
     const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -1292,7 +1762,7 @@
   }
 
   viewportDiv.addEventListener('pointerdown', (e) => { 
-    if(e.target.closest('.zoom-stack')) return;
+    if(e.target.closest('.zoom-stack') || e.target.closest('#seam-modal') || e.target.closest('#fold-modal') || e.target.closest('#notches-modal')) return;
     activeTouches[e.pointerId] = e;
     const touches = Object.values(activeTouches);
     if (touches.length === 1) {
@@ -1370,10 +1840,7 @@
     currentNotchSize = 8;
     setNotchType('v-notch'); // Reset to V-notch
     activeFold = null; extFoldL = false; extFoldR = false;
-    document.getElementById('fold-l').classList.remove('active');
-    document.getElementById('fold-r').classList.remove('active');
-    document.getElementById('ext-fold-l').classList.remove('active');
-    document.getElementById('ext-fold-r').classList.remove('active');
+    updateFoldButtons();
     draw(); resetView();
     initSpecSummary();
   }
@@ -1418,12 +1885,10 @@
     // Update notch type in spec summary
     let notchTypeText = 'V-Notch';
     if (currentNotchType === 'slit-notch') notchTypeText = 'Slit-Notch';
+    else if (currentNotchType === 't-notch') notchTypeText = 'T-Notch';
     document.getElementById('sum-notch-type').textContent = notchTypeText;
 
-    document.getElementById('fold-l').classList.toggle('active', activeFold === 'L');
-    document.getElementById('fold-r').classList.toggle('active', activeFold === 'R');
-    document.getElementById('ext-fold-l').classList.toggle('active', extFoldL);
-    document.getElementById('ext-fold-r').classList.toggle('active', extFoldR);
+    updateFoldButtons();
     document.getElementById('ext-l-shape').classList.toggle('folded', extFoldL);
     document.getElementById('ext-r-shape').classList.toggle('folded', extFoldR);
 
@@ -1638,11 +2103,11 @@
     btn.textContent = "Export PDF";
   }
 
-  // Initialize on load
   window.onload = () => { 
     initSpecSummary();
     draw(); 
     resetView(); 
+    updateFoldButtons();
   };
   
   window.onresize = () => {
