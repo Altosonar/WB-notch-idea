@@ -246,6 +246,60 @@
     stroke: #fff;
     stroke-width: 0.5;
   }
+  .notch-slit {
+    fill: none;
+    stroke: #000;
+    stroke-width: 1.5;
+  }
+
+  /* Notch Type Toggle */
+  .notch-type-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  
+  .notch-type-btn {
+    padding: 6px 10px;
+    border: 1px solid var(--border-light);
+    background: white;
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    flex: 1;
+    text-align: center;
+  }
+  
+  .notch-type-btn.active {
+    background: var(--brand-blue);
+    color: white;
+    border-color: var(--brand-blue);
+  }
+  
+  .notch-type-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-right: 4px;
+  }
+
+  /* Updated notch type toggle row for 3 buttons */
+  .notch-toggle-row {
+    grid-column: 1 / -1;
+  }
+  
+  .notch-toggle-buttons {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+  }
 
   @media (min-width: 769px) {
     .stepper {
@@ -254,6 +308,10 @@
     
     .bottom-shelf .stepper {
       min-width: 160px;
+    }
+    
+    .notch-toggle-row {
+      grid-column: 1 / -1;
     }
   }
 
@@ -352,6 +410,22 @@
     
     .input-group {
       width: 100%;
+    }
+    
+    .notch-toggle-row {
+      grid-column: 1 / -1;
+      margin-top: 5px;
+    }
+    
+    .notch-toggle-buttons {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    
+    .notch-type-btn {
+      padding: 8px 6px;
+      font-size: 9px;
     }
   }
   
@@ -595,6 +669,11 @@
     .bottom-shelf {
       padding: 12px;
     }
+    
+    .notch-type-btn {
+      padding: 7px 4px;
+      font-size: 8px;
+    }
   }
 </style>
 </head>
@@ -617,6 +696,7 @@
         <div class="spec-row">Extension Left: <span class="spec-val" id="sum-ext-l">2.25"</span></div>
         <div class="spec-row">Extension Right: <span class="spec-val" id="sum-ext-r">1.50"</span></div>
         <div class="spec-row">Edge Length: <span class="spec-val" id="sum-bot">34.00"</span></div>
+        <div class="spec-row">Notch Type: <span class="spec-val" id="sum-notch-type">V-Notch</span></div>
     </div>
 
     <div class="zoom-stack">
@@ -684,12 +764,12 @@
        <label>Shape</label>
         <button id="toggle-type-btn" class="action-btn btn-secondary" style="opacity: 0.7; cursor: default;" disabled>Straight</button>
       </div>
-      <div class="input-group" style="opacity: 0.7; pointer-events: none;">
-       <label>Curve Drop</label>
+      <div class="input-group">
+       <label>Notch Size</label>
         <div class="stepper">
-          <button class="step-btn hold-adjust" data-id="drop" data-step="-0.25" disabled>−</button>
-          <input type="number" id="drop" class="stepper-input" value="0" inputmode="decimal" disabled>
-          <button class="step-btn hold-adjust" data-id="drop" data-step="0.25" disabled>+</button>
+          <button class="step-btn hold-adjust" data-id="notch-size" data-step="-1">−</button>
+          <input type="number" id="notch-size" class="stepper-input" value="8" inputmode="decimal" oninput="draw()" min="4" max="20" step="1">
+          <button class="step-btn hold-adjust" data-id="notch-size" data-step="1">+</button>
         </div>
       </div>
     </div>
@@ -707,6 +787,18 @@
         <div class="btn-group">
           <button id="ext-fold-l" class="action-btn btn-outline" onclick="toggleExtFold('L')">Ext L</button>
           <button id="ext-fold-r" class="action-btn btn-outline" onclick="toggleExtFold('R')">Ext R</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Updated Notch Type Toggle Row with 3 options -->
+    <div class="control-grid notch-toggle-row">
+      <div class="input-group">
+        <label>Notch Type</label>
+        <div class="notch-toggle-buttons">
+          <button id="notch-v-btn" class="notch-type-btn active" onclick="setNotchType('v-notch')">V-Notch</button>
+          <button id="notch-t-btn" class="notch-type-btn" onclick="setNotchType('t-notch')">T-Notch</button>
+          <button id="notch-slit-btn" class="notch-type-btn" onclick="setNotchType('slit-notch')">Slit-Notch</button>
         </div>
       </div>
     </div>
@@ -736,6 +828,8 @@
   const isStraightMode = true;
   let zoomRaf = null, adjustTimer = null, adjustInterval = null;
   let isSpacePressed = false;
+  let currentNotchType = 'v-notch'; // Default to V-notch
+  let currentNotchSize = 8; // Default notch size
 
   let activeTouches = {};
   let lastPinchDist = 0;
@@ -907,6 +1001,31 @@
     clearInterval(adjustInterval);
   });
 
+  // Set notch type function
+  function setNotchType(type) {
+    currentNotchType = type;
+    
+    // Update button states
+    document.getElementById('notch-v-btn').classList.toggle('active', type === 'v-notch');
+    document.getElementById('notch-t-btn').classList.toggle('active', type === 't-notch');
+    document.getElementById('notch-slit-btn').classList.toggle('active', type === 'slit-notch');
+    
+    // Update spec summary
+    let notchTypeText = 'V-Notch';
+    if (type === 't-notch') notchTypeText = 'T-Notch';
+    if (type === 'slit-notch') notchTypeText = 'Slit-Notch';
+    document.getElementById('sum-notch-type').textContent = notchTypeText;
+    
+    // Redraw with new notch type
+    draw();
+  }
+
+  // Handle notch size input
+  document.getElementById('notch-size').addEventListener('input', function() {
+    currentNotchSize = parseFloat(this.value) || 8;
+    draw();
+  });
+
   function handleWaistInput() {
     const waist = parseFloat(document.getElementById('waist').value) || 34;
     
@@ -947,13 +1066,18 @@
     
     el.value = parseFloat(newVal.toFixed(4)); 
     if (id === 'waist') handleWaistInput(); 
-    else draw(); 
+    else if (id === 'notch-size') {
+      currentNotchSize = newVal;
+      draw();
+    } else {
+      draw(); 
+    }
   }
 
-  // Improved notching functions based on "In the Folds" guidelines
+  // Improved notching functions with V-notch, T-notch, and Slit-notch support
   function addNotch(x, y, type = "standard", label = "", isTop = true, isFoldLine = false) {
-    const notchLen = 8; // Length of notch lines
-    const triangleSize = 6; // Size of triangle notches
+    const notchLen = currentNotchSize; // Use adjustable notch size
+    const triangleSize = notchLen * 0.75; // Triangle notches are slightly smaller
     
     if (isFoldLine) {
       // Add a different style for fold lines
@@ -968,6 +1092,37 @@
       return;
     }
     
+    // Choose notch style based on user selection
+    switch(currentNotchType) {
+      case 't-notch':
+        // Draw T-notch (horizontal line)
+        drawTNotch(x, y, type, isTop, notchLen);
+        break;
+        
+      case 'slit-notch':
+        // Draw Slit-notch (simple vertical line)
+        drawSlitNotch(x, y, type, isTop, notchLen, triangleSize);
+        break;
+        
+      case 'v-notch':
+      default:
+        // Draw V-notch (original style)
+        drawVNotch(x, y, type, isTop, notchLen, triangleSize);
+        break;
+    }
+    
+    // Add label if provided
+    if (label) {
+      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      text.setAttribute('x', x);
+      text.setAttribute('y', isTop ? y - notchLen - 10 : y + notchLen + 14);
+      text.setAttribute('class', 'notch-label');
+      text.textContent = label;
+      notchesLayer.appendChild(text);
+    }
+  }
+  
+  function drawVNotch(x, y, type, isTop, notchLen, triangleSize) {
     switch(type) {
       case "triangle":
         // Triangle notch (for CF, CB, important points)
@@ -985,7 +1140,7 @@
         const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         dot.setAttribute('cx', x);
         dot.setAttribute('cy', y);
-        dot.setAttribute('r', 2.5);
+        dot.setAttribute('r', notchLen/3);
         dot.setAttribute('class', 'notch-dot');
         notchesLayer.appendChild(dot);
         break;
@@ -1027,15 +1182,78 @@
         notchesLayer.appendChild(line1);
         notchesLayer.appendChild(line2);
     }
+  }
+  
+  function drawTNotch(x, y, type, isTop, notchLen) {
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
     
-    // Add label if provided
-    if (label) {
-      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      text.setAttribute('x', x);
-      text.setAttribute('y', isTop ? y - notchLen - 8 : y + notchLen + 12);
-      text.setAttribute('class', 'notch-label');
-      text.textContent = label;
-      notchesLayer.appendChild(text);
+    if (type === "triangle") {
+      // For triangle type with T-notch, make it a longer horizontal line
+      line.setAttribute('x1', x - notchLen);
+      line.setAttribute('y1', isTop ? y - notchLen/2 : y + notchLen/2);
+      line.setAttribute('x2', x + notchLen);
+      line.setAttribute('y2', isTop ? y - notchLen/2 : y + notchLen/2);
+    } else if (type === "dot") {
+      // Dot notches for T-notch style
+      const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      dot.setAttribute('cx', x);
+      dot.setAttribute('cy', y);
+      dot.setAttribute('r', notchLen/3);
+      dot.setAttribute('class', 'notch-dot');
+      notchesLayer.appendChild(dot);
+    } else {
+      // Standard T-notch
+      line.setAttribute('x1', x - notchLen/2);
+      line.setAttribute('y1', isTop ? y - notchLen/2 : y + notchLen/2);
+      line.setAttribute('x2', x + notchLen/2);
+      line.setAttribute('y2', isTop ? y - notchLen/2 : y + notchLen/2);
+    }
+    
+    if (type !== "dot") {
+      line.setAttribute('class', 'notch-line');
+      notchesLayer.appendChild(line);
+    }
+  }
+  
+  function drawSlitNotch(x, y, type, isTop, notchLen, triangleSize) {
+    if (type === "triangle") {
+      // For important points (CF, CB), draw a vertical slit with triangle ends
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute('x1', x);
+      line.setAttribute('y1', isTop ? y - triangleSize : y);
+      line.setAttribute('x2', x);
+      line.setAttribute('y2', isTop ? y : y + triangleSize);
+      line.setAttribute('class', 'notch-slit');
+      notchesLayer.appendChild(line);
+      
+      // Add triangle ends for better visibility
+      const triangleTop = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      const triangleBottom = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      
+      if (isTop) {
+        triangleTop.setAttribute('d', `M ${x} ${y - triangleSize} L ${x - triangleSize/4} ${y - triangleSize + triangleSize/4} L ${x + triangleSize/4} ${y - triangleSize + triangleSize/4} Z`);
+        notchesLayer.appendChild(triangleTop);
+      } else {
+        triangleBottom.setAttribute('d', `M ${x} ${y + triangleSize} L ${x - triangleSize/4} ${y + triangleSize - triangleSize/4} L ${x + triangleSize/4} ${y + triangleSize - triangleSize/4} Z`);
+        notchesLayer.appendChild(triangleBottom);
+      }
+    } else if (type === "dot") {
+      // Dot notches for slit style
+      const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      dot.setAttribute('cx', x);
+      dot.setAttribute('cy', y);
+      dot.setAttribute('r', notchLen/3);
+      dot.setAttribute('class', 'notch-dot');
+      notchesLayer.appendChild(dot);
+    } else {
+      // Standard slit notch - simple vertical line
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute('x1', x);
+      line.setAttribute('y1', isTop ? y - notchLen/2 : y + notchLen/2);
+      line.setAttribute('x2', x);
+      line.setAttribute('y2', isTop ? y + notchLen/2 : y - notchLen/2);
+      line.setAttribute('class', 'notch-slit');
+      notchesLayer.appendChild(line);
     }
   }
 
@@ -1124,6 +1342,9 @@
     document.getElementById('sa-bot').value = 0.5;
     document.getElementById('sa-left').value = 0.5;
     document.getElementById('sa-right').value = 0.5;
+    document.getElementById('notch-size').value = 8;
+    currentNotchSize = 8;
+    setNotchType('v-notch'); // Reset to V-notch
     activeFold = null; extFoldL = false; extFoldR = false;
     document.getElementById('fold-l').classList.remove('active');
     document.getElementById('fold-r').classList.remove('active');
@@ -1169,6 +1390,12 @@
     document.getElementById('sum-height').textContent = iH.toFixed(2) + '"';
     document.getElementById('sum-ext-l').textContent = eL.toFixed(2) + '"';
     document.getElementById('sum-ext-r').textContent = eR.toFixed(2) + '"';
+    
+    // Update notch type in spec summary
+    let notchTypeText = 'V-Notch';
+    if (currentNotchType === 't-notch') notchTypeText = 'T-Notch';
+    if (currentNotchType === 'slit-notch') notchTypeText = 'Slit-Notch';
+    document.getElementById('sum-notch-type').textContent = notchTypeText;
 
     document.getElementById('fold-l').classList.toggle('active', activeFold === 'L');
     document.getElementById('fold-r').classList.toggle('active', activeFold === 'R');
@@ -1385,6 +1612,7 @@
     btn.textContent = "Export PDF";
   }
 
+  // Initialize on load
   window.onload = () => { 
     initSpecSummary();
     draw(); 
