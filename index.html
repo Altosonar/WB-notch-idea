@@ -290,7 +290,7 @@
     margin-right: 4px;
   }
 
-  /* Updated notch type toggle row for 3 buttons */
+  /* Updated notch type toggle row for 2 buttons */
   .notch-toggle-row {
     grid-column: 1 / -1;
   }
@@ -299,6 +299,36 @@
     display: flex;
     gap: 6px;
     margin-top: 4px;
+  }
+
+  /* Clear Notches Button */
+  .clear-notches-row {
+    grid-column: 1 / -1;
+    margin-top: 5px;
+  }
+  
+  .clear-notches-btn {
+    width: 100%;
+    height: var(--ui-height);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: white;
+    text-align: center;
+    padding: 6px 10px;
+  }
+  
+  .clear-notches-btn:hover {
+    background: #f8f9fa;
+  }
+  
+  .clear-notches-btn:active {
+    background: #e9ecef;
   }
 
   @media (min-width: 769px) {
@@ -426,6 +456,14 @@
     .notch-type-btn {
       padding: 8px 6px;
       font-size: 9px;
+      flex: 1;
+    }
+    
+    .clear-notches-btn {
+      padding: 8px 6px;
+      font-size: 9px;
+      height: auto;
+      min-height: var(--ui-height);
     }
   }
   
@@ -674,6 +712,11 @@
       padding: 7px 4px;
       font-size: 8px;
     }
+    
+    .clear-notches-btn {
+      padding: 7px 4px;
+      font-size: 8px;
+    }
   }
 </style>
 </head>
@@ -791,15 +834,22 @@
       </div>
     </div>
     
-    <!-- Updated Notch Type Toggle Row with 3 options -->
+    <!-- Updated Notch Type Toggle Row with 2 buttons (removed T-notch) -->
     <div class="control-grid notch-toggle-row">
       <div class="input-group">
         <label>Notch Type</label>
         <div class="notch-toggle-buttons">
           <button id="notch-v-btn" class="notch-type-btn active" onclick="setNotchType('v-notch')">V-Notch</button>
-          <button id="notch-t-btn" class="notch-type-btn" onclick="setNotchType('t-notch')">T-Notch</button>
           <button id="notch-slit-btn" class="notch-type-btn" onclick="setNotchType('slit-notch')">Slit-Notch</button>
         </div>
+      </div>
+    </div>
+    
+    <!-- Clear All Notches Button - Same size as notch buttons -->
+    <div class="control-grid clear-notches-row">
+      <div class="input-group">
+        <label>Clear Notches</label>
+        <button class="clear-notches-btn" onclick="clearAllNotches()">Clear All Notches</button>
       </div>
     </div>
   </div>
@@ -830,6 +880,7 @@
   let isSpacePressed = false;
   let currentNotchType = 'v-notch'; // Default to V-notch
   let currentNotchSize = 8; // Default notch size
+  let showNotches = true; // Control whether notches are shown
 
   let activeTouches = {};
   let lastPinchDist = 0;
@@ -1001,23 +1052,32 @@
     clearInterval(adjustInterval);
   });
 
-  // Set notch type function
+  // Set notch type function - updated for 2 notch types
   function setNotchType(type) {
     currentNotchType = type;
     
     // Update button states
     document.getElementById('notch-v-btn').classList.toggle('active', type === 'v-notch');
-    document.getElementById('notch-t-btn').classList.toggle('active', type === 't-notch');
     document.getElementById('notch-slit-btn').classList.toggle('active', type === 'slit-notch');
     
     // Update spec summary
     let notchTypeText = 'V-Notch';
-    if (type === 't-notch') notchTypeText = 'T-Notch';
     if (type === 'slit-notch') notchTypeText = 'Slit-Notch';
     document.getElementById('sum-notch-type').textContent = notchTypeText;
     
     // Redraw with new notch type
     draw();
+  }
+
+  // Clear all notches function
+  function clearAllNotches() {
+    showNotches = false;
+    draw();
+    
+    // Re-enable notches after a short delay so they come back on next redraw
+    setTimeout(() => {
+      showNotches = true;
+    }, 100);
   }
 
   // Handle notch size input
@@ -1074,7 +1134,7 @@
     }
   }
 
-  // Improved notching functions with V-notch, T-notch, and Slit-notch support
+  // Improved notching functions with V-notch and Slit-notch support (removed T-notch)
   function addNotch(x, y, type = "standard", label = "", isTop = true, isFoldLine = false) {
     const notchLen = currentNotchSize; // Use adjustable notch size
     const triangleSize = notchLen * 0.75; // Triangle notches are slightly smaller
@@ -1094,11 +1154,6 @@
     
     // Choose notch style based on user selection
     switch(currentNotchType) {
-      case 't-notch':
-        // Draw T-notch (horizontal line)
-        drawTNotch(x, y, type, isTop, notchLen);
-        break;
-        
       case 'slit-notch':
         // Draw Slit-notch (simple vertical line)
         drawSlitNotch(x, y, type, isTop, notchLen, triangleSize);
@@ -1181,37 +1236,6 @@
         
         notchesLayer.appendChild(line1);
         notchesLayer.appendChild(line2);
-    }
-  }
-  
-  function drawTNotch(x, y, type, isTop, notchLen) {
-    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    
-    if (type === "triangle") {
-      // For triangle type with T-notch, make it a longer horizontal line
-      line.setAttribute('x1', x - notchLen);
-      line.setAttribute('y1', isTop ? y - notchLen/2 : y + notchLen/2);
-      line.setAttribute('x2', x + notchLen);
-      line.setAttribute('y2', isTop ? y - notchLen/2 : y + notchLen/2);
-    } else if (type === "dot") {
-      // Dot notches for T-notch style
-      const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      dot.setAttribute('cx', x);
-      dot.setAttribute('cy', y);
-      dot.setAttribute('r', notchLen/3);
-      dot.setAttribute('class', 'notch-dot');
-      notchesLayer.appendChild(dot);
-    } else {
-      // Standard T-notch
-      line.setAttribute('x1', x - notchLen/2);
-      line.setAttribute('y1', isTop ? y - notchLen/2 : y + notchLen/2);
-      line.setAttribute('x2', x + notchLen/2);
-      line.setAttribute('y2', isTop ? y - notchLen/2 : y + notchLen/2);
-    }
-    
-    if (type !== "dot") {
-      line.setAttribute('class', 'notch-line');
-      notchesLayer.appendChild(line);
     }
   }
   
@@ -1393,7 +1417,6 @@
     
     // Update notch type in spec summary
     let notchTypeText = 'V-Notch';
-    if (currentNotchType === 't-notch') notchTypeText = 'T-Notch';
     if (currentNotchType === 'slit-notch') notchTypeText = 'Slit-Notch';
     document.getElementById('sum-notch-type').textContent = notchTypeText;
 
@@ -1484,108 +1507,111 @@
     document.getElementById('cf-indicator').setAttribute('x2', cX);
     document.getElementById('cf-indicator').setAttribute('y2', tY+H*px+40);
     
-    // ========== IMPROVED NOTCHING LOGIC ==========
-    // Based on "In the Folds" guidelines for waistband notching
-    
-    // Calculate positions based on fold state
-    let notchingStartX, notchingEndX, totalNotchingLength;
-    
-    if (activeFold === 'L') {
-        // Fold at left, waistband from cX to x2 (half of waistband)
-        notchingStartX = cX;
-        notchingEndX = x2;
-        totalNotchingLength = mW; // Half of waist
-    } else if (activeFold === 'R') {
-        // Fold at right, waistband from x1 to cX (half of waistband)
-        notchingStartX = x1;
-        notchingEndX = cX;
-        totalNotchingLength = mW; // Half of waist
-    } else {
-        // No fold, full waistband from x1 to x2
-        notchingStartX = x1;
-        notchingEndX = x2;
-        totalNotchingLength = mW * 2; // Full waist
-    }
-    
-    // Add notches at top and bottom edges
-    const topY = tY;
-    const bottomY = tY + H * px;
-    
-    if (activeFold === null) {
-        // Full waistband notching (no fold)
-        // 1. Center Front (CF) - triangle notch at center
-        const cfX = notchingStartX + totalNotchingLength / 2;
-        addNotch(cfX, topY, "triangle", "CF", true);
-        addNotch(cfX, bottomY, "triangle", "CF", false);
-        
-        // 2. Side seams at quarter points
-        const side1X = notchingStartX + totalNotchingLength / 4;
-        const side2X = notchingStartX + (3 * totalNotchingLength) / 4;
-        addNotch(side1X, topY, "standard", "SIDE", true);
-        addNotch(side1X, bottomY, "standard", "SIDE", false);
-        addNotch(side2X, topY, "standard", "SIDE", true);
-        addNotch(side2X, bottomY, "standard", "SIDE", false);
-        
-        // 3. Center Back (CB) at ends (for one-piece waistband, both ends are CB)
-        addNotch(notchingStartX, topY, "triangle", "CB", true);
-        addNotch(notchingStartX, bottomY, "triangle", "CB", false);
-        addNotch(notchingEndX, topY, "triangle", "CB", true);
-        addNotch(notchingEndX, bottomY, "triangle", "CB", false);
-        
-        // 4. Mark fold line at center if it's a fold-over waistband
-        if (iH > 1.5) { // If band height suggests it might be folded
-            addNotch(cfX, topY, "standard", "", true, true);
-        }
-        
-    } else {
-        // Half waistband (folded)
-        // When folded, we only have two important points: fold and end
-        
-        if (activeFold === 'L') {
-            // Fold at left: cX is the fold (CF), x2 is the end (CB)
-            addNotch(cX, topY, "triangle", "CF (FOLD)", true);
-            addNotch(cX, bottomY, "triangle", "CF (FOLD)", false);
-            addNotch(x2, topY, "triangle", "CB", true);
-            addNotch(x2, bottomY, "triangle", "CB", false);
-        } else if (activeFold === 'R') {
-            // Fold at right: x1 is the end (CB), cX is the fold (CF)
-            addNotch(x1, topY, "triangle", "CB", true);
-            addNotch(x1, bottomY, "triangle", "CB", false);
-            addNotch(cX, topY, "triangle", "CF (FOLD)", true);
-            addNotch(cX, bottomY, "triangle", "CF (FOLD)", false);
-        }
-        
-        // Add a notch at the midpoint of the visible half
-        const halfPointX = notchingStartX + totalNotchingLength / 2;
-        addNotch(halfPointX, topY, "dot", "", true);
-        addNotch(halfPointX, bottomY, "dot", "", false);
-    }
-    
-    // 5. Notch at extension boundaries (where extension meets waistband)
-    if (eL > 0 && activeFold !== 'R') {
-        // Left extension meets waistband at x1
-        addNotch(x1, topY, "standard", "EXT", true);
-        addNotch(x1, bottomY, "standard", "EXT", false);
-    }
-    
-    if (eR > 0 && activeFold !== 'L') {
-        // Right extension meets waistband at x2
-        addNotch(x2, topY, "standard", "EXT", true);
-        addNotch(x2, bottomY, "standard", "EXT", false);
-    }
-    
-    // 6. Additional notches for larger waistbands (> 40")
-    if (W_b > 40 && activeFold === null) {
-        // Add additional notches at 1/8 points for easier matching
-        const eighth1 = notchingStartX + totalNotchingLength / 8;
-        const eighth2 = notchingStartX + (3 * totalNotchingLength) / 8;
-        const eighth3 = notchingStartX + (5 * totalNotchingLength) / 8;
-        const eighth4 = notchingStartX + (7 * totalNotchingLength) / 8;
-        
-        [eighth1, eighth2, eighth3, eighth4].forEach(x => {
-            addNotch(x, topY, "dot", "", true);
-            addNotch(x, bottomY, "dot", "", false);
-        });
+    // Only draw notches if showNotches is true
+    if (showNotches) {
+      // ========== IMPROVED NOTCHING LOGIC ==========
+      // Based on "In the Folds" guidelines for waistband notching
+      
+      // Calculate positions based on fold state
+      let notchingStartX, notchingEndX, totalNotchingLength;
+      
+      if (activeFold === 'L') {
+          // Fold at left, waistband from cX to x2 (half of waistband)
+          notchingStartX = cX;
+          notchingEndX = x2;
+          totalNotchingLength = mW; // Half of waist
+      } else if (activeFold === 'R') {
+          // Fold at right, waistband from x1 to cX (half of waistband)
+          notchingStartX = x1;
+          notchingEndX = cX;
+          totalNotchingLength = mW; // Half of waist
+      } else {
+          // No fold, full waistband from x1 to x2
+          notchingStartX = x1;
+          notchingEndX = x2;
+          totalNotchingLength = mW * 2; // Full waist
+      }
+      
+      // Add notches at top and bottom edges
+      const topY = tY;
+      const bottomY = tY + H * px;
+      
+      if (activeFold === null) {
+          // Full waistband notching (no fold)
+          // 1. Center Front (CF) - triangle notch at center
+          const cfX = notchingStartX + totalNotchingLength / 2;
+          addNotch(cfX, topY, "triangle", "CF", true);
+          addNotch(cfX, bottomY, "triangle", "CF", false);
+          
+          // 2. Side seams at quarter points
+          const side1X = notchingStartX + totalNotchingLength / 4;
+          const side2X = notchingStartX + (3 * totalNotchingLength) / 4;
+          addNotch(side1X, topY, "standard", "SIDE", true);
+          addNotch(side1X, bottomY, "standard", "SIDE", false);
+          addNotch(side2X, topY, "standard", "SIDE", true);
+          addNotch(side2X, bottomY, "standard", "SIDE", false);
+          
+          // 3. Center Back (CB) at ends (for one-piece waistband, both ends are CB)
+          addNotch(notchingStartX, topY, "triangle", "CB", true);
+          addNotch(notchingStartX, bottomY, "triangle", "CB", false);
+          addNotch(notchingEndX, topY, "triangle", "CB", true);
+          addNotch(notchingEndX, bottomY, "triangle", "CB", false);
+          
+          // 4. Mark fold line at center if it's a fold-over waistband
+          if (iH > 1.5) { // If band height suggests it might be folded
+              addNotch(cfX, topY, "standard", "", true, true);
+          }
+          
+      } else {
+          // Half waistband (folded)
+          // When folded, we only have two important points: fold and end
+          
+          if (activeFold === 'L') {
+              // Fold at left: cX is the fold (CF), x2 is the end (CB)
+              addNotch(cX, topY, "triangle", "CF (FOLD)", true);
+              addNotch(cX, bottomY, "triangle", "CF (FOLD)", false);
+              addNotch(x2, topY, "triangle", "CB", true);
+              addNotch(x2, bottomY, "triangle", "CB", false);
+          } else if (activeFold === 'R') {
+              // Fold at right: x1 is the end (CB), cX is the fold (CF)
+              addNotch(x1, topY, "triangle", "CB", true);
+              addNotch(x1, bottomY, "triangle", "CB", false);
+              addNotch(cX, topY, "triangle", "CF (FOLD)", true);
+              addNotch(cX, bottomY, "triangle", "CF (FOLD)", false);
+          }
+          
+          // Add a notch at the midpoint of the visible half
+          const halfPointX = notchingStartX + totalNotchingLength / 2;
+          addNotch(halfPointX, topY, "dot", "", true);
+          addNotch(halfPointX, bottomY, "dot", "", false);
+      }
+      
+      // 5. Notch at extension boundaries (where extension meets waistband)
+      if (eL > 0 && activeFold !== 'R') {
+          // Left extension meets waistband at x1
+          addNotch(x1, topY, "standard", "EXT", true);
+          addNotch(x1, bottomY, "standard", "EXT", false);
+      }
+      
+      if (eR > 0 && activeFold !== 'L') {
+          // Right extension meets waistband at x2
+          addNotch(x2, topY, "standard", "EXT", true);
+          addNotch(x2, bottomY, "standard", "EXT", false);
+      }
+      
+      // 6. Additional notches for larger waistbands (> 40")
+      if (W_b > 40 && activeFold === null) {
+          // Add additional notches at 1/8 points for easier matching
+          const eighth1 = notchingStartX + totalNotchingLength / 8;
+          const eighth2 = notchingStartX + (3 * totalNotchingLength) / 8;
+          const eighth3 = notchingStartX + (5 * totalNotchingLength) / 8;
+          const eighth4 = notchingStartX + (7 * totalNotchingLength) / 8;
+          
+          [eighth1, eighth2, eighth3, eighth4].forEach(x => {
+              addNotch(x, topY, "dot", "", true);
+              addNotch(x, bottomY, "dot", "", false);
+          });
+      }
     }
   }
 
