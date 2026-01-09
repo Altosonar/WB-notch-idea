@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Pro WB - Straight Pattern Generator</title>
+<link rel="icon" type="image/png" href="https://smartpatternmaking.com/cdn/shop/files/SMART_Pattern_Making_Logo_32x32.png?v=1613504360">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    --brand-orange: #ff4500;
+    --brand-blue: #007bff;
+    --dark-grey: #2d3436;
+    --bg-page: #f1f3f5;
+    --bg-light: #ffffff;
+    --border-light: #e2e8f0;
+    --text-muted: #636e72;
+    --ui-height: 42px;
+    --glass-bg: rgba(255, 255, 255, 0.98);
+  }
+  
+  * { 
+    box-sizing: border-box; 
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  body { 
+    font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+    background: var(--bg-page); 
+    margin: 0; padding: 0;
+    color: var(--dark-grey);
+    overflow: hidden; 
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .app-container {
+    position: relative;
+    width: 100%;
+    max-width: 900px; 
+    height: 100%;
+    max-height: 100vh;
+    background: var(--bg-light);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 0 40px rgba(0,0,0,0.1);
+  }
+  
+  .viewport {
+    flex: 1;
+    width: 100%;
+    background: #ffffff;
+    cursor: crosshair;
+    touch-action: none;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+  }
+  
+  .ui-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    z-index: 100;
+    flex-shrink: 0;
+  }
+  
+  .top-bar {
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .header-specs-btn {
+    padding: 8px 16px;
+    background: var(--brand-blue);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+  
+  .bottom-shelf {
+    padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border-light);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+    max-height: 45%;
+    overflow-y: auto;
+  }
+  
+  .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .input-group { display: flex; flex-direction: column; gap: 4px; }
+  label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); }
+  
+  .stepper {
+    display: flex;
+    height: var(--ui-height);
+    background: rgba(255,255,255,0.5);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .step-btn {
+    width: 40px; border: none; background: rgba(255,255,255,0.7); 
+    color: var(--brand-blue); font-size: 20px; font-weight: bold;
+    cursor: pointer; transition: background 0.2s;
+    user-select: none; touch-action: none;
+  }
+  .step-btn:active { background: #eef6ff; }
+  
+  .stepper-input {
+    flex: 1; border: none; text-align: center; font-size: 14px; font-weight: 700;
+    width: 100%; outline: none; background: transparent;
+    min-width: 0;
+    padding: 0 5px;
+  }
+
+  .stepper-input::-webkit-outer-spin-button,
+  .stepper-input::-webkit-inner-spin-button {
+    -webkit-appearance: none; margin: 0;
+  }
+  .stepper-input[type=number] { -moz-appearance: textfield; }
+  
+  .btn-group { display: flex; gap: 6px; }
+  .action-btn {
+    flex: 1; height: var(--ui-height); border: none; border-radius: 8px;
+    font-size: 10px; font-weight: 800; text-transform: uppercase;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  
+  .btn-primary { background: var(--brand-blue); color: white; }
+  .btn-secondary { background: #5a6268; color: white; }
+  .btn-outline { background: white; border: 1px solid var(--border-light); color: var(--dark-grey); }
+  .btn-outline.active { background: var(--brand-blue); border-color: var(--brand-blue); color: white; }
+  .btn-danger { background: #ff4757; color: white; }
+  
+  .zoom-stack {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: auto;
+    z-index: 101;
+  }
+
+  .zoom-btn {
+    width: 44px; height: 44px; border-radius: 10px; border: none;
+    background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    font-size: 22px; font-weight: bold; cursor: pointer;
+    color: var(--dark-grey); user-select: none; touch-action: none;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .seam-trigger-btn {
+    background: var(--brand-blue);
+    color: white;
+    font-size: 14px;
+    font-weight: 900;
+  }
+
+  .spec-summary {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 200px;
+    background: #f0f7ff;
+    border-radius: 16px;
+    padding: 15px;
+    z-index: 10;
+    pointer-events: none;
+    box-shadow: 0 4px 15px rgba(0,123,255,0.05);
+    border: 1px solid rgba(0,123,255,0.1);
+    transition: all 0.3s ease;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  .spec-summary.desktop-hidden {
+    opacity: 0;
+    transform: translateY(-20px);
+    pointer-events: none;
+  }
+
+  .spec-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  .spec-val {
+    color: var(--brand-blue);
+    font-weight: 900;
+    font-size: 11px;
+  }
+
+  /* Notching Styles - Improved */
+  .notch-line { stroke: #000; stroke-width: 1.5; }
+  .notch-label { 
+    fill: #000; 
+    font-size: 9px; 
+    font-weight: 700; 
+    paint-order: stroke; 
+    stroke: #fff; 
+    stroke-width: 2px;
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+  .notch-dot {
+    fill: #000;
+    stroke: #fff;
+    stroke-width: 1;
+    r: 2.5;
+  }
+  .notch-triangle {
+    fill: #000;
+    stroke: #fff;
+    stroke-width: 0.5;
+  }
+
+  @media (min-width: 769px) {
+    .stepper {
+      min-width: 180px;
+    }
+    
+    .bottom-shelf .stepper {
+      min-width: 160px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .spec-summary {
+      opacity: 0;
+      transform: translateY(-20px);
+      pointer-events: none;
+    }
+    
+    .spec-summary.mobile-active {
+      opacity: 1;
+      transform: translateY(0);
+      top: auto !important;
+      bottom: 100% !important;
+      left: 0 !important;
+      right: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      border-radius: 0;
+      padding: 15px 20px !important;
+      background: rgba(240, 247, 255, 0.85);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      pointer-events: auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      z-index: 1000;
+      border: none;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+      margin: 0;
+    }
+    
+    .spec-summary.mobile-active .spec-row.type-row {
+      display: none;
+    }
+    
+    .spec-summary.mobile-active .spec-row { 
+      font-size: 11px !important;
+      margin-bottom: 6px !important; 
+      flex: 0 0 48%;
+      color: #2d3436;
+      font-weight: 600;
+    }
+    
+    .spec-summary.mobile-active .spec-val { 
+      font-size: 11px !important;
+      color: #007bff;
+      font-weight: 900;
+    }
+    
+    .stepper {
+      height: 50px;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+    
+    .step-btn {
+      width: 48px;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    
+    .stepper-input {
+      font-size: 16px;
+      min-width: 60px;
+      flex: 1 1 auto;
+      padding: 0 8px;
+    }
+    
+    #seam-modal .stepper {
+      height: 52px;
+    }
+    
+    #seam-modal .step-btn {
+      width: 52px;
+    }
+    
+    #seam-modal .stepper-input {
+      font-size: 16px;
+      min-width: 70px;
+    }
+    
+    .bottom-shelf {
+      grid-template-columns: 1fr;
+      gap: 15px;
+      padding: 15px;
+    }
+    
+    .control-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .input-group {
+      width: 100%;
+    }
+  }
+  
+  svg { 
+    width: 100%; 
+    height: 100%; 
+    display: block; 
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  .wb-path { fill: rgba(255, 69, 0, 0.05); stroke: var(--brand-orange); stroke-width: 2.5; }
+  .seam-path { fill: none; stroke: var(--brand-blue); stroke-width: 1.5; stroke-dasharray: 5,3; pointer-events: none; }
+  .ext-path { fill: rgba(0, 123, 255, 0.05); stroke: var(--brand-blue); stroke-width: 2.5; }
+  .ext-path.folded { fill: rgba(0, 123, 255, 0.2); stroke-width: 3.5; }
+  .cf-line { stroke: var(--brand-blue); stroke-width: 2; stroke-dasharray: 8,4; opacity: 0.6; }
+  .measurement-text { 
+    fill: #000; 
+    font-size: 13px; 
+    font-weight: 900; 
+    paint-order: stroke; 
+    stroke: #fff; 
+    stroke-width: 3px; 
+    pointer-events: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  .seam-label-text { 
+    fill: #ff0000; 
+    font-size: 14px; 
+    font-weight: 900; 
+    paint-order: stroke; 
+    stroke: #fff; 
+    stroke-width: 3px; 
+    pointer-events: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  #seam-modal {
+    position: absolute; 
+    inset: 0; 
+    background: transparent; 
+    z-index: 1000; 
+    display: none; 
+    pointer-events: none;
+    overflow: hidden;
+  }
+  #seam-modal.active { display: flex; }
+
+  .modal-card { 
+    position: absolute;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px); 
+    border: 1.5px solid rgba(0, 0, 0, 0.1);
+    border-radius: 20px; 
+    width: 340px;
+    padding: 0; 
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2); 
+    pointer-events: auto;
+    left: 50%;
+    top: 40%;
+    transform: translate(-50%, -50%);
+    user-select: none;
+    touch-action: none;
+  }
+  
+  .modal-header {
+    padding: 12px 20px;
+    background: rgba(0,123,255,0.1);
+    border-radius: 20px 20px 0 0;
+    cursor: move;
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--brand-blue);
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .modal-close-btn {
+    background: none;
+    border: none;
+    color: var(--brand-blue);
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .modal-close-btn:active {
+    opacity: 0.7;
+  }
+  
+  .modal-body { 
+    padding: 20px;
+  }
+  
+  .modal-footer { display: none; }
+  
+  #seam-modal .stepper {
+    height: 48px;
+    min-width: 0;
+  }
+  
+  #seam-modal .step-btn {
+    width: 48px;
+    font-size: 22px;
+    height: 100%;
+  }
+  
+  #seam-modal .stepper-input {
+    font-size: 15px;
+    height: 100%;
+    min-width: 0;
+    width: 100%;
+    padding: 0 5px;
+  }
+  
+  #seam-modal .control-grid {
+    gap: 15px;
+  }
+  
+  @media (max-width: 768px) {
+    .modal-card {
+      width: calc(100% - 32px);
+      left: 16px;
+      right: 16px;
+      transform: translate(0, 0);
+      top: 20px;
+      margin: 0;
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+    }
+    
+    #seam-modal .stepper {
+      height: 56px;
+      justify-content: space-between;
+    }
+    
+    #seam-modal .step-btn {
+      width: 60px;
+      font-size: 24px;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+    }
+    
+    #seam-modal .stepper-input {
+      font-size: 16px !important;
+      flex: 0 1 100px;
+      min-width: 80px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    #seam-modal .stepper {
+      position: relative;
+    }
+    
+    #seam-modal .step-btn:first-child {
+      margin-right: -10px;
+    }
+    
+    #seam-modal .step-btn:last-child {
+      margin-left: -10px;
+    }
+    
+    #seam-modal.active {
+      align-items: flex-start;
+      padding-top: 20px;
+    }
+    
+    .modal-body {
+      padding: 15px;
+    }
+    
+    #seam-modal .control-grid {
+      gap: 12px;
+    }
+    
+    .modal-card {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+    }
+  }
+  
+  input, textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+  
+  @media (max-width: 768px) {
+    input[type="number"] {
+      font-size: 16px !important;
+    }
+    
+    .stepper-input:focus {
+      background-color: rgba(0, 123, 255, 0.05);
+    }
+  }
+
+  @media (max-width: 360px) {
+    .stepper {
+      height: 48px;
+    }
+    
+    .step-btn {
+      width: 44px;
+      font-size: 18px;
+    }
+    
+    .stepper-input {
+      font-size: 15px;
+      min-width: 50px;
+    }
+    
+    .bottom-shelf {
+      padding: 12px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-container" id="app-contain">
+  <div class="top-bar ui-panel">
+    <button class="header-specs-btn" onclick="toggleSpecs()">WB SPECS</button>
+    <div class="btn-group">
+        <button class="action-btn btn-danger" style="padding: 0 15px;" onclick="resetInputs()">Reset</button>
+        <button class="action-btn btn-primary" style="padding: 0 20px;" onclick="downloadPDF()">Export PDF</button>
+    </div>
+  </div>
+
+  <div class="viewport" id="viewport-div">
+    <div class="spec-summary" id="spec-summary">
+        <div class="spec-row type-row">Type: <span class="spec-val" id="sum-type">Straight</span></div>
+        <div class="spec-row">Finished WB: <span class="spec-val" id="sum-wb">34.00"</span></div>
+        <div class="spec-row">Band Height: <span class="spec-val" id="sum-height">1.50"</span></div>
+        <div class="spec-row">Extension Left: <span class="spec-val" id="sum-ext-l">2.25"</span></div>
+        <div class="spec-row">Extension Right: <span class="spec-val" id="sum-ext-r">1.50"</span></div>
+        <div class="spec-row">Edge Length: <span class="spec-val" id="sum-bot">34.00"</span></div>
+    </div>
+
+    <div class="zoom-stack">
+      <button class="zoom-btn seam-trigger-btn" id="sa-toggle-btn">SA</button>
+      <button class="zoom-btn zoom-gradual" data-factor="1.012">+</button>
+      <button class="zoom-btn zoom-gradual" data-factor="0.988">−</button>
+      <button class="zoom-btn" onclick="resetView()">⟲</button>
+    </div>
+    <svg id="svg">
+      <g id="viewport-content">
+        <g id="main-group">
+          <path id="seam-shape" class="seam-path" />
+          <path id="wb-shape" class="wb-path" />
+          <path id="ext-l-shape" class="ext-path" />
+          <path id="ext-r-shape" class="ext-path" />
+          <line id="cf-indicator" class="cf-line" />
+          <g id="notches-layer"></g>
+          <g id="labels-layer"></g>
+        </g>
+      </g>
+    </svg>
+  </div>
+
+  <div class="bottom-shelf ui-panel">
+    <div class="control-grid">
+      <div class="input-group">
+       <label>Total Waist</label>
+        <div class="stepper">
+          <button class="step-btn hold-adjust" data-id="waist" data-step="-0.5">−</button>
+          <input type="number" id="waist" class="stepper-input" value="34" step="0.5" inputmode="decimal" oninput="handleWaistInput()" min="10" max="100">
+          <button class="step-btn hold-adjust" data-id="waist" data-step="0.5">+</button>
+        </div>
+      </div>
+      <div class="input-group">
+       <label>Band Height</label>
+        <div class="stepper">
+          <button class="step-btn hold-adjust" data-id="height" data-step="-0.125">−</button>
+          <input type="number" id="height" class="stepper-input" value="1.5" step="0.125" inputmode="decimal" oninput="draw()" min="0.5" max="6">
+          <button class="step-btn hold-adjust" data-id="height" data-step="0.125">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="control-grid">
+      <div class="input-group">
+       <label>Ext Left</label>
+        <div class="stepper">
+          <button class="step-btn hold-adjust" data-id="val-l" data-step="-0.25">−</button>
+          <input type="number" id="val-l" class="stepper-input" value="2.25" inputmode="decimal" oninput="draw()" min="0" step="0.25">
+          <button class="step-btn hold-adjust" data-id="val-l" data-step="0.25">+</button>
+        </div>
+      </div>
+      <div class="input-group">
+       <label>Ext Right</label>
+        <div class="stepper">
+          <button class="step-btn hold-adjust" data-id="val-r" data-step="-0.25">−</button>
+          <input type="number" id="val-r" class="stepper-input" value="1.50" inputmode="decimal" oninput="draw()" min="0" step="0.25">
+          <button class="step-btn hold-adjust" data-id="val-r" data-step="0.25">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="control-grid">
+      <div class="input-group">
+       <label>Shape</label>
+        <button id="toggle-type-btn" class="action-btn btn-secondary" style="opacity: 0.7; cursor: default;" disabled>Straight</button>
+      </div>
+      <div class="input-group" style="opacity: 0.7; pointer-events: none;">
+       <label>Curve Drop</label>
+        <div class="stepper">
+          <button class="step-btn hold-adjust" data-id="drop" data-step="-0.25" disabled>−</button>
+          <input type="number" id="drop" class="stepper-input" value="0" inputmode="decimal" disabled>
+          <button class="step-btn hold-adjust" data-id="drop" data-step="0.25" disabled>+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="control-grid">
+      <div class="input-group">
+       <label>Fold Pattern</label>
+        <div class="btn-group">
+          <button id="fold-l" class="action-btn btn-outline" onclick="toggleFold('L')">Fold L</button>
+          <button id="fold-r" class="action-btn btn-outline" onclick="toggleFold('R')">Fold R</button>
+        </div>
+      </div>
+      <div class="input-group">
+       <label>Fold Extensions</label>
+        <div class="btn-group">
+          <button id="ext-fold-l" class="action-btn btn-outline" onclick="toggleExtFold('L')">Ext L</button>
+          <button id="ext-fold-r" class="action-btn btn-outline" onclick="toggleExtFold('R')">Ext R</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="seam-modal">
+    <div class="modal-card" id="draggable-card">
+      <div class="modal-header" id="modal-drag-handle">
+        Seam Allowance (Drag Me)
+        <button class="modal-close-btn" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+          <div class="control-grid" style="margin-bottom:0;">
+            <div class="input-group"><label>Top</label><div class="stepper"><button class="step-btn hold-adjust" data-id="sa-top" data-step="-0.125">−</button><input type="number" id="sa-top" class="stepper-input" value="0.5" inputmode="decimal" oninput="draw()" min="0" max="2" step="0.125"><button class="step-btn hold-adjust" data-id="sa-top" data-step="0.125">+</button></div></div>
+            <div class="input-group"><label>Bottom</label><div class="stepper"><button class="step-btn hold-adjust" data-id="sa-bot" data-step="-0.125">−</button><input type="number" id="sa-bot" class="stepper-input" value="0.5" inputmode="decimal" oninput="draw()" min="0" max="2" step="0.125"><button class="step-btn hold-adjust" data-id="sa-bot" data-step="0.125">+</button></div></div>
+            <div class="input-group"><label>Left</label><div class="stepper"><button class="step-btn hold-adjust" data-id="sa-left" data-step="-0.125">−</button><input type="number" id="sa-left" class="stepper-input" value="0.5" inputmode="decimal" oninput="draw()" min="0" max="2" step="0.125"><button class="step-btn hold-adjust" data-id="sa-left" data-step="0.125">+</button></div></div>
+            <div class="input-group"><label>Right</label><div class="stepper"><button class="step-btn hold-adjust" data-id="sa-right" data-step="-0.125">−</button><input type="number" id="sa-right" class="stepper-input" value="0.5" inputmode="decimal" oninput="draw()" min="0" max="2" step="0.125"><button class="step-btn hold-adjust" data-id="sa-right" data-step="0.125">+</button></div></div>
+          </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let activeFold = null, extFoldL = false, extFoldR = false;
+  let scale = 1.0, translateX = 0, translateY = 0, isDragging = false, startX, startY;
+  const isStraightMode = true;
+  let zoomRaf = null, adjustTimer = null, adjustInterval = null;
+  let isSpacePressed = false;
+
+  let activeTouches = {};
+  let lastPinchDist = 0;
+
+  const viewportDiv = document.getElementById('viewport-div');
+  const viewportContent = document.getElementById('viewport-content');
+  const mainGroup = document.getElementById('main-group');
+  const labelsLayer = document.getElementById('labels-layer');
+  const notchesLayer = document.getElementById('notches-layer');
+  const draggableCard = document.getElementById('draggable-card');
+  const dragHandle = document.getElementById('modal-drag-handle');
+  const saModal = document.getElementById('seam-modal');
+  const appContain = document.getElementById('app-contain');
+  const saBtn = document.getElementById('sa-toggle-btn');
+  const specSummary = document.getElementById('spec-summary');
+
+  // Prevent text selection on the entire app
+  document.addEventListener('selectstart', function(e) {
+    e.preventDefault();
+    return false;
+  });
+
+  // Initialize spec summary based on device type
+  function initSpecSummary() {
+    if (window.innerWidth <= 768) {
+      specSummary.classList.remove('desktop-hidden');
+    } else {
+      specSummary.classList.remove('mobile-active');
+    }
+  }
+
+  function toggleSpecs() {
+    if (window.innerWidth <= 768) {
+      specSummary.classList.toggle('mobile-active');
+      specSummary.classList.remove('desktop-hidden');
+    } else {
+      specSummary.classList.toggle('desktop-hidden');
+      specSummary.classList.remove('mobile-active');
+    }
+  }
+
+  function toggleSAModal() {
+    if (saModal.classList.contains('active')) {
+      closeModal();
+    } else {
+      openModal();
+    }
+  }
+
+  saBtn.addEventListener('click', () => toggleSAModal());
+
+  function openModal() { 
+    saModal.style.display = 'flex';
+    saModal.classList.add('active'); 
+    
+    if (window.innerWidth <= 768) {
+      draggableCard.style.left = '16px';
+      draggableCard.style.right = '16px';
+      draggableCard.style.transform = 'translate(0, 0)';
+      draggableCard.style.top = '20px';
+      draggableCard.style.overflowY = 'auto';
+      draggableCard.style.maxHeight = 'calc(100vh - 40px)';
+    } else {
+      draggableCard.style.left = '50%';
+      draggableCard.style.top = '40%';
+      draggableCard.style.transform = 'translate(-50%, -50%)';
+      draggableCard.style.width = '340px';
+      draggableCard.style.overflowY = 'visible';
+      draggableCard.style.maxHeight = 'none';
+    }
+  }
+  
+  function closeModal() { 
+    saModal.classList.remove('active'); 
+    saModal.style.display = 'none';
+  }
+
+  let isModalDragging = false, modalInitX = 0, modalInitY = 0;
+  
+  dragHandle.addEventListener('pointerdown', (e) => {
+    if (!e.target.classList.contains('modal-close-btn')) {
+      isModalDragging = true;
+      const rect = draggableCard.getBoundingClientRect();
+      const containerRect = appContain.getBoundingClientRect();
+      modalInitX = e.clientX - rect.left;
+      modalInitY = e.clientY - rect.top;
+      draggableCard.style.transform = 'none';
+      draggableCard.style.left = (rect.left - containerRect.left) + 'px';
+      draggableCard.style.top = (rect.top - containerRect.top) + 'px';
+      dragHandle.setPointerCapture(e.pointerId);
+    }
+  });
+
+  window.addEventListener('pointermove', (e) => { 
+    if (isModalDragging) { 
+        const containerRect = appContain.getBoundingClientRect();
+        let newX = e.clientX - containerRect.left - modalInitX;
+        let newY = e.clientY - containerRect.top - modalInitY;
+        newX = Math.max(0, Math.min(newX, containerRect.width - draggableCard.offsetWidth));
+        newY = Math.max(0, Math.min(newY, containerRect.height - draggableCard.offsetHeight));
+        draggableCard.style.left = `${newX}px`; 
+        draggableCard.style.top = `${newY}px`; 
+    } 
+  });
+  window.addEventListener('pointerup', () => isModalDragging = false);
+
+  saModal.addEventListener('click', (e) => {
+    if (e.target === saModal) {
+      closeModal();
+    }
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') { isSpacePressed = true; viewportDiv.style.cursor = 'grab'; }
+    if (e.key === 'Escape') { if (saModal.classList.contains('active')) closeModal(); else resetInputs(); }
+  });
+  window.addEventListener('keyup', (e) => { if (e.code === 'Space') { isSpacePressed = false; viewportDiv.style.cursor = 'crosshair'; } });
+
+  viewportDiv.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const rect = viewportDiv.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const factor = (e.ctrlKey) ? (e.deltaY > 0 ? 0.98 : 1.02) : (e.altKey ? (e.deltaY > 0 ? 0.9 : 1.1) : 1);
+    if (factor !== 1) {
+        const oldScale = scale;
+        scale *= factor;
+        scale = Math.min(Math.max(scale, 0.1), 10);
+        translateX = mouseX - (mouseX - translateX) * (scale / oldScale);
+        translateY = mouseY - (mouseY - translateY) * (scale / oldScale);
+        updateViewportTransform();
+    }
+  }, { passive: false });
+
+  document.querySelectorAll('.zoom-gradual').forEach(btn => {
+    btn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      const factor = parseFloat(btn.dataset.factor);
+      const glide = () => {
+        const pivotX = viewportDiv.clientWidth / 2;
+        const pivotY = viewportDiv.clientHeight / 2.5;
+        const oldScale = scale;
+        scale *= factor;
+        scale = Math.min(Math.max(scale, 0.1), 10);
+        translateX = pivotX - (pivotX - translateX) * (scale / oldScale);
+        translateY = pivotY - (pivotY - translateY) * (scale / oldScale);
+        updateViewportTransform();
+        zoomRaf = requestAnimationFrame(glide);
+      };
+      zoomRaf = requestAnimationFrame(glide);
+    });
+  });
+
+  document.querySelectorAll('.hold-adjust').forEach(btn => {
+    btn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      const id = btn.dataset.id;
+      const step = parseFloat(btn.dataset.step);
+      adjValue(id, step);
+      adjustTimer = setTimeout(() => {
+        adjustInterval = setInterval(() => adjValue(id, step), 80);
+      }, 400);
+    });
+  });
+
+  window.addEventListener('pointerup', () => {
+    cancelAnimationFrame(zoomRaf);
+    clearTimeout(adjustTimer);
+    clearInterval(adjustInterval);
+  });
+
+  function handleWaistInput() {
+    const waist = parseFloat(document.getElementById('waist').value) || 34;
+    
+    // Update extension limits to half of waist
+    const halfWaist = waist / 2;
+    const valL = parseFloat(document.getElementById('val-l').value) || 0;
+    const valR = parseFloat(document.getElementById('val-r').value) || 0;
+    
+    if (valL > halfWaist) {
+      document.getElementById('val-l').value = halfWaist.toFixed(2);
+    }
+    if (valR > halfWaist) {
+      document.getElementById('val-r').value = halfWaist.toFixed(2);
+    }
+    
+    draw();
+  }
+
+  function toggleFold(side) { activeFold = (activeFold === side) ? null : side; draw(); }
+  function toggleExtFold(side) { if(side==='L') extFoldL = !extFoldL; else extFoldR = !extFoldR; draw(); }
+  
+  function adjValue(id, val) { 
+    const el = document.getElementById(id); 
+    let currentVal = parseFloat(el.value || 0);
+    let newVal = Math.max(0, currentVal + val);
+    
+    // Special handling for extensions: limit to half of waist
+    if (id === 'val-l' || id === 'val-r') {
+      const waist = parseFloat(document.getElementById('waist').value) || 34;
+      const maxExtension = waist / 2;
+      newVal = Math.min(newVal, maxExtension);
+    }
+    
+    // Apply min/max constraints
+    const min = parseFloat(el.min) || -Infinity;
+    const max = parseFloat(el.max) || Infinity;
+    newVal = Math.max(min, Math.min(newVal, max));
+    
+    el.value = parseFloat(newVal.toFixed(4)); 
+    if (id === 'waist') handleWaistInput(); 
+    else draw(); 
+  }
+
+  // Improved notching functions based on "In the Folds" guidelines
+  function addNotch(x, y, type = "standard", label = "", isTop = true, isFoldLine = false) {
+    const notchLen = 8; // Length of notch lines
+    const triangleSize = 6; // Size of triangle notches
+    
+    if (isFoldLine) {
+      // Add a different style for fold lines
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute('x1', x);
+      line.setAttribute('y1', isTop ? y - notchLen : y + notchLen);
+      line.setAttribute('x2', x);
+      line.setAttribute('y2', isTop ? y + notchLen : y - notchLen);
+      line.setAttribute('class', 'notch-line');
+      line.setAttribute('stroke-dasharray', '3,2');
+      notchesLayer.appendChild(line);
+      return;
+    }
+    
+    switch(type) {
+      case "triangle":
+        // Triangle notch (for CF, CB, important points)
+        const triangle = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        const points = isTop 
+          ? `M ${x} ${y} L ${x - triangleSize/2} ${y - triangleSize} L ${x + triangleSize/2} ${y - triangleSize} Z`
+          : `M ${x} ${y} L ${x - triangleSize/2} ${y + triangleSize} L ${x + triangleSize/2} ${y + triangleSize} Z`;
+        triangle.setAttribute('d', points);
+        triangle.setAttribute('class', 'notch-triangle');
+        notchesLayer.appendChild(triangle);
+        break;
+        
+      case "dot":
+        // Dot notch (for less important markings)
+        const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        dot.setAttribute('cx', x);
+        dot.setAttribute('cy', y);
+        dot.setAttribute('r', 2.5);
+        dot.setAttribute('class', 'notch-dot');
+        notchesLayer.appendChild(dot);
+        break;
+        
+      case "standard":
+      default:
+        // Standard V-notch
+        const line1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        const line2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        
+        if (isTop) {
+          // Top edge notches point outward
+          line1.setAttribute('x1', x - notchLen/2);
+          line1.setAttribute('y1', y);
+          line1.setAttribute('x2', x);
+          line1.setAttribute('y2', y - notchLen);
+          line1.setAttribute('class', 'notch-line');
+          
+          line2.setAttribute('x1', x + notchLen/2);
+          line2.setAttribute('y1', y);
+          line2.setAttribute('x2', x);
+          line2.setAttribute('y2', y - notchLen);
+          line2.setAttribute('class', 'notch-line');
+        } else {
+          // Bottom edge notches point inward
+          line1.setAttribute('x1', x - notchLen/2);
+          line1.setAttribute('y1', y);
+          line1.setAttribute('x2', x);
+          line1.setAttribute('y2', y + notchLen);
+          line1.setAttribute('class', 'notch-line');
+          
+          line2.setAttribute('x1', x + notchLen/2);
+          line2.setAttribute('y1', y);
+          line2.setAttribute('x2', x);
+          line2.setAttribute('y2', y + notchLen);
+          line2.setAttribute('class', 'notch-line');
+        }
+        
+        notchesLayer.appendChild(line1);
+        notchesLayer.appendChild(line2);
+    }
+    
+    // Add label if provided
+    if (label) {
+      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      text.setAttribute('x', x);
+      text.setAttribute('y', isTop ? y - notchLen - 8 : y + notchLen + 12);
+      text.setAttribute('class', 'notch-label');
+      text.textContent = label;
+      notchesLayer.appendChild(text);
+    }
+  }
+
+  function addLabel(x, y, text, anchor = "middle", rotation = 0, isSeam = false) {
+    const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    t.setAttribute('x', x); t.setAttribute('y', y); t.setAttribute('text-anchor', anchor); t.setAttribute('class', isSeam ? 'seam-label-text' : 'measurement-text');
+    if (rotation !== 0) t.setAttribute('transform', `rotate(${rotation}, ${x}, ${y})`);
+    t.textContent = isSeam ? "SA=" + text : text; 
+    t.style.userSelect = 'none';
+    t.style.webkitUserSelect = 'none';
+    labelsLayer.appendChild(t);
+  }
+
+  viewportDiv.addEventListener('pointerdown', (e) => { 
+    if(e.target.closest('.zoom-stack')) return;
+    activeTouches[e.pointerId] = e;
+    const touches = Object.values(activeTouches);
+    if (touches.length === 1) {
+        isDragging = true; 
+        startX = e.clientX - translateX; 
+        startY = e.clientY - translateY; 
+        if(isSpacePressed) viewportDiv.style.cursor = 'grabbing';
+    } else if (touches.length === 2) {
+        isDragging = false;
+        lastPinchDist = Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+    }
+    viewportDiv.setPointerCapture(e.pointerId); 
+  });
+
+  viewportDiv.addEventListener('pointermove', (e) => { 
+    activeTouches[e.pointerId] = e;
+    const touches = Object.values(activeTouches);
+    if (touches.length === 1 && isDragging) {
+        translateX = e.clientX - startX; 
+        translateY = e.clientY - startY; 
+        updateViewportTransform();
+    } else if (touches.length === 2) {
+        const dist = Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+        const midX = (touches[0].clientX + touches[1].clientX) / 2;
+        const midY = (touches[0].clientY + touches[1].clientY) / 2;
+        if (lastPinchDist > 0) {
+            const rect = viewportDiv.getBoundingClientRect();
+            const viewMidX = midX - rect.left;
+            const viewMidY = midY - rect.top;
+            const factor = dist / lastPinchDist;
+            const oldScale = scale;
+            scale = Math.min(Math.max(scale * factor, 0.1), 10);
+            translateX = viewMidX - (viewMidX - translateX) * (scale / oldScale);
+            translateY = viewMidY - (viewMidY - translateY) * (scale / oldScale);
+            updateViewportTransform();
+        }
+        lastPinchDist = dist;
+    }
+  });
+
+  viewportDiv.addEventListener('pointerup', (e) => { 
+    delete activeTouches[e.pointerId];
+    if (Object.keys(activeTouches).length < 2) lastPinchDist = 0;
+    if (Object.keys(activeTouches).length === 0) {
+        isDragging = false; 
+        if(isSpacePressed) viewportDiv.style.cursor = 'grab';
+    }
+  });
+
+  viewportDiv.addEventListener('pointercancel', (e) => {
+    delete activeTouches[e.pointerId];
+    lastPinchDist = 0;
+    isDragging = false;
+  });
+
+  function resetView() {
+    const bbox = mainGroup.getBBox(); if (bbox.width === 0) return;
+    scale = Math.min((viewportDiv.clientWidth * 0.8) / bbox.width, (viewportDiv.clientHeight * 0.35) / bbox.height, 1.2);
+    translateX = (viewportDiv.clientWidth / 2) - (bbox.x + bbox.width / 2) * scale; translateY = (viewportDiv.clientHeight / 2.5) - (bbox.y + bbox.height / 2) * scale;
+    updateViewportTransform();
+  }
+  
+  function updateViewportTransform() { viewportContent.setAttribute('transform', `translate(${translateX}, ${translateY}) scale(${scale})`); }
+
+  function resetInputs() {
+    document.getElementById('waist').value = 34;
+    document.getElementById('height').value = 1.5;
+    document.getElementById('val-l').value = 2.25;
+    document.getElementById('val-r').value = 1.5;
+    document.getElementById('sa-top').value = 0.5;
+    document.getElementById('sa-bot').value = 0.5;
+    document.getElementById('sa-left').value = 0.5;
+    document.getElementById('sa-right').value = 0.5;
+    activeFold = null; extFoldL = false; extFoldR = false;
+    document.getElementById('fold-l').classList.remove('active');
+    document.getElementById('fold-r').classList.remove('active');
+    document.getElementById('ext-fold-l').classList.remove('active');
+    document.getElementById('ext-fold-r').classList.remove('active');
+    draw(); resetView();
+    initSpecSummary();
+  }
+
+  function draw() {
+    let W_b = parseFloat(document.getElementById('waist').value) || 34;
+    const iH = parseFloat(document.getElementById('height').value) || 1.5;
+    let eL = parseFloat(document.getElementById('val-l').value) || 0;
+    let eR = parseFloat(document.getElementById('val-r').value) || 0;
+    const sT = parseFloat(document.getElementById('sa-top').value) || 0;
+    const sB = parseFloat(document.getElementById('sa-bot').value) || 0;
+    const sL = parseFloat(document.getElementById('sa-left').value) || 0;
+    const sR = parseFloat(document.getElementById('sa-right').value) || 0;
+    const H = iH * 3;
+    const cX = 500;
+    const px = 20;
+    const tY = 200;
+    
+    labelsLayer.innerHTML = '';
+    notchesLayer.innerHTML = '';
+    
+    // Apply extension limits: cannot exceed half of waist measurement
+    const maxExtension = W_b / 2;
+    eL = Math.min(eL, maxExtension);
+    eR = Math.min(eR, maxExtension);
+    
+    // Update the input values if they exceed the limit
+    if (parseFloat(document.getElementById('val-l').value) > maxExtension) {
+      document.getElementById('val-l').value = eL.toFixed(2);
+    }
+    if (parseFloat(document.getElementById('val-r').value) > maxExtension) {
+      document.getElementById('val-r').value = eR.toFixed(2);
+    }
+    
+    // Update ALL spec summary values
+    document.getElementById('sum-type').textContent = "Straight";
+    document.getElementById('sum-wb').textContent = W_b.toFixed(2) + '"';
+    document.getElementById('sum-height').textContent = iH.toFixed(2) + '"';
+    document.getElementById('sum-ext-l').textContent = eL.toFixed(2) + '"';
+    document.getElementById('sum-ext-r').textContent = eR.toFixed(2) + '"';
+
+    document.getElementById('fold-l').classList.toggle('active', activeFold === 'L');
+    document.getElementById('fold-r').classList.toggle('active', activeFold === 'R');
+    document.getElementById('ext-fold-l').classList.toggle('active', extFoldL);
+    document.getElementById('ext-fold-r').classList.toggle('active', extFoldR);
+    document.getElementById('ext-l-shape').classList.toggle('folded', extFoldL);
+    document.getElementById('ext-r-shape').classList.toggle('folded', extFoldR);
+
+    const mW = (W_b / 2) * px;
+    const x1 = cX - mW;
+    const x2 = cX + mW;
+    
+    // Main waistband shape
+    const wbD = activeFold === 'L' ? 
+        `M ${cX} ${tY} h ${-mW} v ${H*px} h ${mW} Z` : 
+                activeFold === 'R' ? 
+        `M ${cX} ${tY} h ${mW} v ${H*px} h ${-mW} Z` : 
+                `M ${x1} ${tY} h ${mW*2} v ${H*px} h ${-mW*2} Z`;
+    
+    // Extension shapes
+    const extLD = activeFold==='R' ? "" : 
+                 (extFoldL ? `M ${x1} ${tY} h ${eL*px} v ${H*px} h ${-eL*px} Z` : 
+                             `M ${x1} ${tY} h ${-eL*px} v ${H*px} h ${eL*px} Z`);
+    const extRD = activeFold==='L' ? "" : 
+                 (extFoldR ? `M ${x2} ${tY} h ${-eR*px} v ${H*px} h ${eR*px} Z` : 
+                             `M ${x2} ${tY} h ${eR*px} v ${H*px} h ${-eR*px} Z`);
+    
+    document.getElementById('wb-shape').setAttribute('d', wbD);
+    document.getElementById('ext-l-shape').setAttribute('d', extLD);
+    document.getElementById('ext-r-shape').setAttribute('d', extRD);
+    
+    // Seam allowance shape - Only add seam allowance where there's actual fabric
+    let sx1, sx2;
+    
+    if (activeFold === 'L') {
+        // Left side is fold, no extension or seam allowance on left
+        sx1 = cX;
+        sx2 = x2 + (eR*px) + sR*px;
+    } else if (activeFold === 'R') {
+        // Right side is fold, no extension or seam allowance on right
+        sx1 = x1 - (eL*px) - sL*px;
+        sx2 = cX;
+    } else {
+        // No fold, both sides can have extensions and seam allowance
+        sx1 = x1 - (eL*px) - sL*px;
+        sx2 = x2 + (eR*px) + sR*px;
+    }
+    
+    // Seam allowance path
+    document.getElementById('seam-shape').setAttribute('d', 
+        `M ${sx1} ${tY-sT*px} H ${sx2} V ${tY+H*px+sB*px} H ${sx1} Z`);
+    
+    // Add measurement labels
+    const lX = activeFold === 'L' ? cX - mW/2 : activeFold === 'R' ? cX + mW/2 : cX;
+    addLabel(lX, tY + (H*px*0.35), `${(activeFold ? W_b/2 : W_b).toFixed(2)}"`);
+    addLabel(lX, tY + (H*px*0.75), `${(activeFold ? W_b/2 : W_b).toFixed(2)}"`);
+    
+    document.getElementById('sum-bot').textContent = (activeFold ? W_b/2 : W_b).toFixed(2) + '"';
+    
+    // Extension labels
+    if(eL > 0 && activeFold !== 'R') {
+        const extX = x1 - (eL*px/2);
+        addLabel(extX, tY + (H*px/2), `${eL.toFixed(2)}"`);
+    }
+    if(eR > 0 && activeFold !== 'L') {
+        const extX = x2 + (eR*px/2);
+        addLabel(extX, tY + (H*px/2), `${eR.toFixed(2)}"`);
+    }
+    
+    // Seam allowance labels - only show where there's actual seam allowance
+    if(sT > 0) addLabel(cX, tY - sT*px - 5, `${sT}`, "middle", 0, true);
+    if(sB > 0) addLabel(cX, tY + H*px + sB*px + 15, `${sB}`, "middle", 0, true);
+    
+    if(sL > 0 && activeFold !== 'L') {
+        const labelX = sx1 + (sL*px/2);
+        addLabel(labelX, tY + (H*px/2), `${sL}`, "middle", 0, true);
+    }
+    if(sR > 0 && activeFold !== 'R') {
+        const labelX = sx2 - (sR*px/2);
+        addLabel(labelX, tY + (H*px/2), `${sR}`, "middle", 0, true);
+    }
+    
+    // Center fold indicator
+    document.getElementById('cf-indicator').setAttribute('x1', cX);
+    document.getElementById('cf-indicator').setAttribute('y1', tY-40);
+    document.getElementById('cf-indicator').setAttribute('x2', cX);
+    document.getElementById('cf-indicator').setAttribute('y2', tY+H*px+40);
+    
+    // ========== IMPROVED NOTCHING LOGIC ==========
+    // Based on "In the Folds" guidelines for waistband notching
+    
+    // Calculate positions based on fold state
+    let notchingStartX, notchingEndX, totalNotchingLength;
+    
+    if (activeFold === 'L') {
+        // Fold at left, waistband from cX to x2 (half of waistband)
+        notchingStartX = cX;
+        notchingEndX = x2;
+        totalNotchingLength = mW; // Half of waist
+    } else if (activeFold === 'R') {
+        // Fold at right, waistband from x1 to cX (half of waistband)
+        notchingStartX = x1;
+        notchingEndX = cX;
+        totalNotchingLength = mW; // Half of waist
+    } else {
+        // No fold, full waistband from x1 to x2
+        notchingStartX = x1;
+        notchingEndX = x2;
+        totalNotchingLength = mW * 2; // Full waist
+    }
+    
+    // Add notches at top and bottom edges
+    const topY = tY;
+    const bottomY = tY + H * px;
+    
+    if (activeFold === null) {
+        // Full waistband notching (no fold)
+        // 1. Center Front (CF) - triangle notch at center
+        const cfX = notchingStartX + totalNotchingLength / 2;
+        addNotch(cfX, topY, "triangle", "CF", true);
+        addNotch(cfX, bottomY, "triangle", "CF", false);
+        
+        // 2. Side seams at quarter points
+        const side1X = notchingStartX + totalNotchingLength / 4;
+        const side2X = notchingStartX + (3 * totalNotchingLength) / 4;
+        addNotch(side1X, topY, "standard", "SIDE", true);
+        addNotch(side1X, bottomY, "standard", "SIDE", false);
+        addNotch(side2X, topY, "standard", "SIDE", true);
+        addNotch(side2X, bottomY, "standard", "SIDE", false);
+        
+        // 3. Center Back (CB) at ends (for one-piece waistband, both ends are CB)
+        addNotch(notchingStartX, topY, "triangle", "CB", true);
+        addNotch(notchingStartX, bottomY, "triangle", "CB", false);
+        addNotch(notchingEndX, topY, "triangle", "CB", true);
+        addNotch(notchingEndX, bottomY, "triangle", "CB", false);
+        
+        // 4. Mark fold line at center if it's a fold-over waistband
+        if (iH > 1.5) { // If band height suggests it might be folded
+            addNotch(cfX, topY, "standard", "", true, true);
+        }
+        
+    } else {
+        // Half waistband (folded)
+        // When folded, we only have two important points: fold and end
+        
+        if (activeFold === 'L') {
+            // Fold at left: cX is the fold (CF), x2 is the end (CB)
+            addNotch(cX, topY, "triangle", "CF (FOLD)", true);
+            addNotch(cX, bottomY, "triangle", "CF (FOLD)", false);
+            addNotch(x2, topY, "triangle", "CB", true);
+            addNotch(x2, bottomY, "triangle", "CB", false);
+        } else if (activeFold === 'R') {
+            // Fold at right: x1 is the end (CB), cX is the fold (CF)
+            addNotch(x1, topY, "triangle", "CB", true);
+            addNotch(x1, bottomY, "triangle", "CB", false);
+            addNotch(cX, topY, "triangle", "CF (FOLD)", true);
+            addNotch(cX, bottomY, "triangle", "CF (FOLD)", false);
+        }
+        
+        // Add a notch at the midpoint of the visible half
+        const halfPointX = notchingStartX + totalNotchingLength / 2;
+        addNotch(halfPointX, topY, "dot", "", true);
+        addNotch(halfPointX, bottomY, "dot", "", false);
+    }
+    
+    // 5. Notch at extension boundaries (where extension meets waistband)
+    if (eL > 0 && activeFold !== 'R') {
+        // Left extension meets waistband at x1
+        addNotch(x1, topY, "standard", "EXT", true);
+        addNotch(x1, bottomY, "standard", "EXT", false);
+    }
+    
+    if (eR > 0 && activeFold !== 'L') {
+        // Right extension meets waistband at x2
+        addNotch(x2, topY, "standard", "EXT", true);
+        addNotch(x2, bottomY, "standard", "EXT", false);
+    }
+    
+    // 6. Additional notches for larger waistbands (> 40")
+    if (W_b > 40 && activeFold === null) {
+        // Add additional notches at 1/8 points for easier matching
+        const eighth1 = notchingStartX + totalNotchingLength / 8;
+        const eighth2 = notchingStartX + (3 * totalNotchingLength) / 8;
+        const eighth3 = notchingStartX + (5 * totalNotchingLength) / 8;
+        const eighth4 = notchingStartX + (7 * totalNotchingLength) / 8;
+        
+        [eighth1, eighth2, eighth3, eighth4].forEach(x => {
+            addNotch(x, topY, "dot", "", true);
+            addNotch(x, bottomY, "dot", "", false);
+        });
+    }
+  }
+
+  async function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const btn = document.querySelector('.btn-primary');
+    btn.textContent = "Generating...";
+    const oldT = viewportContent.getAttribute('transform');
+    viewportContent.setAttribute('transform', 'translate(0,0) scale(1)');
+    const bbox = mainGroup.getBBox();
+    const pad = 40;
+    const canvas = await html2canvas(document.getElementById('svg'), {
+        backgroundColor: null,
+        x: bbox.x - pad,
+        y: bbox.y - pad,
+        width: bbox.width + pad * 2,
+        height: bbox.height + pad * 2,
+        scale: 3
+    });
+    viewportContent.setAttribute('transform', oldT);
+    const pdf = new jsPDF(canvas.width > canvas.height ? 'l' : 'p', 'pt', [canvas.width, canvas.height]);
+    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width, canvas.height);
+    pdf.save(`straight-wb-pattern-${Date.now()}.pdf`);
+    btn.textContent = "Export PDF";
+  }
+
+  window.onload = () => { 
+    initSpecSummary();
+    draw(); 
+    resetView(); 
+  };
+  
+  window.onresize = () => {
+    initSpecSummary();
+    resetView();
+  };
+</script>
+</body>
+</html>
